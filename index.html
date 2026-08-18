@@ -12,100 +12,101 @@
 
     <main class="app">
 
-        <div class="logo">W</div>
+        <section class="screen active">
 
-        <h1>Entrar na conta</h1>
+            <div class="logo">W</div>
 
-        <form id="loginForm">
+            <h1>Entrar na conta</h1>
 
-            <label for="cpfLogin">CPF</label>
+            <form id="loginForm">
 
-            <div class="input-wrap">
-                <span>♙</span>
+                <label for="cpfLogin">CPF</label>
 
-                <input
-                    id="cpfLogin"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="14"
-                    placeholder="000.000.000-00"
-                    required
+                <div class="input-wrap">
+                    <span>♙</span>
+
+                    <input
+                        id="cpfLogin"
+                        type="text"
+                        inputmode="numeric"
+                        maxlength="14"
+                        placeholder="000.000.000-00"
+                        required
+                    >
+                </div>
+
+                <label for="tipoLogin">Tipo de Usuário</label>
+
+                <div class="select-wrap">
+
+                    <select id="tipoLogin" required>
+                        <option value="" selected disabled>
+                            Selecione
+                        </option>
+
+                        <option value="morador">
+                            Morador
+                        </option>
+
+                        <option value="funcionario">
+                            Funcionário
+                        </option>
+
+                        <option value="sindico">
+                            Síndico
+                        </option>
+                    </select>
+
+                    <span>⌄</span>
+
+                </div>
+
+                <label for="senhaLogin">Senha</label>
+
+                <div class="input-wrap">
+                    <span>▣</span>
+
+                    <input
+                        id="senhaLogin"
+                        type="password"
+                        placeholder="••••••••••"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="eye"
+                        data-target="senhaLogin"
+                    >
+                        ◉
+                    </button>
+                </div>
+
+                <a
+                    href="recuperar-senha.html"
+                    class="forgot"
                 >
-            </div>
-
-            <label for="tipoLogin">Tipo de Usuário</label>
-
-            <div class="select-wrap">
-
-                <select id="tipoLogin" required>
-
-                    <option value="" selected disabled>
-                        Selecione
-                    </option>
-
-                    <option value="morador">
-                        Morador
-                    </option>
-
-                    <option value="funcionario">
-                        Funcionário
-                    </option>
-
-                    <option value="sindico">
-                        Síndico
-                    </option>
-
-                </select>
-
-                <span>⌄</span>
-
-            </div>
-
-            <label for="senhaLogin">Senha</label>
-
-            <div class="input-wrap">
-
-                <span>▣</span>
-
-                <input
-                    id="senhaLogin"
-                    type="password"
-                    placeholder="••••••••••"
-                    required
-                >
+                    Esqueceu a senha?
+                </a>
 
                 <button
-                    type="button"
-                    class="eye"
-                    data-target="senhaLogin"
+                    class="primary login-button"
+                    type="submit"
                 >
-                    ◉
+                    Entrar
                 </button>
 
-            </div>
+            </form>
 
-            <a
-                href="recuperar-senha.html"
-                class="forgot"
-            >
-                Esqueceu a senha?
-            </a>
+            <p class="bottom-link">
+                Não tem conta?
 
-            <button
-                class="primary login-button"
-                type="submit"
-            >
-                Entrar
-            </button>
+                <a href="criar-conta.html">
+                    Cadastre-se
+                </a>
+            </p>
 
-        </form>
-
-        <p class="bottom-link">
-            Não tem conta?
-            <a href="criar-conta.html">
-                Cadastre-se
-            </a>
-        </p>
+        </section>
 
     </main>
 
