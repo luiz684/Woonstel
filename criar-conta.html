@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Woonstel - Autenticação</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app">
+
+<section id="cadastro" class="screen active">
+  <div class="logo">W</div>
+  <h1>Criar nova conta</h1>
+git   <form id="cadastroForm">
+    <label>Nome Completo</label>
+    <div class="input-wrap"><span>♙</span><input id="nome" type="text" placeholder="Ex: Ana Carolina Souza Silva..." required></div>
+
+    <label>Email</label>
+    <div class="input-wrap"><span>✉</span><input id="emailCadastro" type="email" placeholder="Ex: anacarolinasilva@gmail.com..." required></div>
+
+    <label>CPF</label>
+    <div class="input-wrap"><span>♙</span><input id="cpfCadastro" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required></div>
+
+    <label>Senha</label>
+    <div class="input-wrap"><span>▣</span><input id="senhaCadastro" type="password" placeholder="••••••••••" required><button type="button" class="eye" data-target="senhaCadastro">◉</button></div>
+
+    <label>Confirmar Senha</label>
+    <div class="input-wrap"><span>▣</span><input id="confirmarSenha" type="password" placeholder="••••••••••" required><button type="button" class="eye" data-target="confirmarSenha">◉</button></div>
+
+    <label>Tipo de Usuário</label>
+    <div class="select-wrap">
+      <select id="tipoCadastro" required>
+        <option value="" selected disabled>Selecione</option>
+        <option value="morador">Morador</option>
+        <option value="funcionario">Funcionário</option>
+        <option value="sindico">Síndico</option>
+      </select><span>⌄</span>
+    </div>
+
+    <button class="primary" type="submit">Criar conta</button>
+  </form>
+  <p class="bottom-link">Já possui uma conta? <button type="button" onclick="mostrarTela('login')">Entrar</button></p>
+</section>
+
+<section id="login" class="screen">
+  <div class="logo">W</div>
+  <h1>Entrar na conta</h1>
+  <form id="loginForm">
+    <label>CPF</label>
+    <div class="input-wrap"><span>♙</span><input id="cpfLogin" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required></div>
+
+    <label>Tipo de Usuário</label>
+    <div class="select-wrap">
+      <select id="tipoLogin" required>
+        <option value="" selected disabled>Selecione</option>
+        <option value="morador">Morador</option>
+        <option value="funcionario">Funcionário</option>
+        <option value="sindico">Síndico</option>
+      </select><span>⌄</span>
+    </div>
+
+    <label>Senha</label>
+    <div class="input-wrap"><span>▣</span><input id="senhaLogin" type="password" placeholder="••••••••••" required><button type="button" class="eye" data-target="senhaLogin">◉</button></div>
+
+    <button type="button" class="forgot" onclick="mostrarTela('recuperacao')">Esqueceu a senha?</button>
+    <button class="primary login-button" type="submit">Entrar</button>
+  </form>
+  <p class="bottom-link">Não tem conta? <button type="button" onclick="mostrarTela('cadastro')">Cadastre-se</button></p>
+</section>
+
+<section id="recuperacao" class="screen">
+  <div class="logo">W</div>
+  <h1>Esqueceu sua senha?</h1>
+  <p class="recovery-text">Informe seu e-mail para continuar</p>
+  <form id="recuperacaoForm">
+    <label>Qual o e-mail da sua conta?</label>
+    <div class="input-wrap"><span>✉</span><input id="emailRecuperacao" type="email" placeholder="Informe o seu e-mail" required></div>
+    <button class="primary" type="submit">Continuar</button>
+  </form>
+  <p class="bottom-link"><button type="button" onclick="mostrarTela('login')">Voltar para entrar</button></p>
+</section>
+
+</main>
+<div id="toast" class="toast"></div>
+<script src="script.js"></script>
+</body>
+</html>

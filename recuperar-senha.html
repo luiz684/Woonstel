@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woonstel - Recuperar Senha</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="app">
+
+        <div class="logo">W</div>
+
+        <h1>Esqueceu sua senha?</h1>
+
+        <p class="recovery-text">
+            Informe seu e-mail para continuar
+        </p>
+
+        <form id="recuperacaoForm">
+
+            <label for="emailRecuperacao">
+                Qual o e-mail da sua conta?
+            </label>
+
+            <div class="input-wrap">
+
+                <span>✉</span>
+
+                <input
+                    id="emailRecuperacao"
+                    type="email"
+                    placeholder="Informe o seu e-mail"
+                    required
+                >
+
+            </div>
+
+            <button
+                class="primary"
+                type="submit"
+            >
+                Continuar
+            </button>
+
+        </form>
+
+        <p class="bottom-link">
+            <a href="login.html">
+                Voltar para entrar
+            </a>
+        </p>
+
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
