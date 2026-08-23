@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastrar Condomínio — Convive</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+  <div class="app-frame">
+    <div class="screen no-nav" id="screen">
+      <div class="topbar" id="topbar">
+        <a class="back-btn" id="backBtn" href="inicio.html">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </a>
+        <h1>Cadastrar Condomínio</h1>
+      </div>
+
+      <div class="role-note" id="onboardingNote" style="display:none;">
+        Falta só isso: cadastre o condomínio que você administra para liberar seu painel de síndico.
+      </div>
+
+      <form id="condForm" novalidate>
+        <div class="field">
+          <label for="nome">Nome do Condomínio</label>
+          <div class="input-wrap">
+            <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" />
+            </svg>
+            <input type="text" id="nome" placeholder="Ex: Residencial Bosque Verde">
+          </div>
+        </div>
+        <div class="field">
+          <label for="endereco">Endereço</label>
+          <div class="input-wrap">
+            <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade">
+          </div>
+        </div>
+        <div class="field">
+          <label for="unidades">Número de Unidades</label>
+          <div class="input-wrap">
+            <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="3" width="16" height="18" rx="1" />
+              <path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2" />
+            </svg>
+            <input type="number" id="unidades" placeholder="Ex: 96" min="1">
+          </div>
+        </div>
+        <div class="field">
+          <label for="blocos">Número de Blocos / Torres</label>
+          <div class="input-wrap">
+            <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="8" width="7" height="13" />
+              <rect x="14" y="4" width="7" height="17" />
+            </svg>
+            <input type="number" id="blocos" placeholder="Ex: 4" min="1">
+          </div>
+        </div>
+
+        <div class="role-note">O código de convite gerado será usado pelos moradores para vincular a conta deles a este
+          condomínio no momento do cadastro.</div>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn">Cadastrar condomínio</button>
+      </form>
+    </div>
+  </div>
+  <script src="../js/data.js"></script>
+  <script>
+    const user = requireAuth('sindico');
+    const onboarding = new URLSearchParams(location.search).get('onboarding') === '1';
+    let existing = store.getCondominios().find(c => c.sindicoId === user.id);
+
+    if (onboarding) {
+      document.getElementById('onboardingNote').style.display = 'block';
+      document.getElementById('backBtn').style.visibility = 'hidden';
+    }
+
+    if (existing && !onboarding) {
+      document.getElementById('nome').value = existing.nome;
+      document.getElementById('endereco').value = existing.endereco;
+      document.getElementById('unidades').value = existing.unidades;
+      document.getElementById('blocos').value = existing.blocos;
+      document.getElementById('submitBtn').textContent = 'Salvar alterações';
+    }
+
+    document.getElementById('condForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nome = document.getElementById('nome').value.trim();
+      const endereco = document.getElementById('endereco').value.trim();
+      const unidades = document.getElementById('unidades').value;
+      const blocos = document.getElementById('blocos').value;
+      if (!nome || !endereco || !unidades || !blocos) {
+        showToast('Preencha todos os campos.');
+        return;
+      }
+      if (existing) {
+        existing.nome = nome; existing.endereco = endereco; existing.unidades = +unidades; existing.blocos = +blocos;
+        store.updateCondominio(existing);
+      } else {
+        const codigo = nome.replace(/[^a-zA-Z]/g, '').slice(0, 6).toUpperCase() + Math.floor(Math.random() * 900 + 100);
+        existing = { id: 'c' + Date.now(), nome, endereco, unidades: +unidades, blocos: +blocos, sindicoId: user.id, codigo };
+        store.saveCondominio(existing);
+      }
+      showToast('Condomínio salvo com sucesso!');
+      setTimeout(() => { window.location.href = 'inicio.html'; }, 900);
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detalhes da Solicitação — Convive</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-frame">
+  <div class="screen no-nav">
+    <div class="topbar">
+      <a class="back-btn" href="solicitacoes.html">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1>Detalhes da Solicitação</h1>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+<script src="../js/data.js"></script>
+<script>
+const user = requireAuth('sindico');
+const id = new URLSearchParams(location.search).get('id');
+let s = store.getSolicitacao(id);
+const badgeMap = {Pendente:'badge-amber', 'Em andamento':'badge-blue', Resolvida:'badge-green'};
+const prioMap = {Alta:'badge-red', Média:'badge-amber', Baixa:'badge-gray'};
+const nextStatus = {Pendente:'Em andamento', 'Em andamento':'Resolvida'};
+const nextLabel = {Pendente:'Validar e iniciar atendimento', 'Em andamento':'Marcar como resolvida'};
+const nextHistLabel = {Pendente:'Solicitação validada pela adm', 'Em andamento':'Serviço concluído'};
+
+function draw(){
+  document.getElementById('content').innerHTML = `
+    <div class="detail-card">
+      <div class="badge-row">
+        <span class="badge badge-gray">${s.categoria.toUpperCase()}</span>
+        <span class="badge ${prioMap[s.prioridade]}">${s.prioridade} PRIORIDADE</span>
+        <span class="badge ${badgeMap[s.status]}">${s.status}</span>
+      </div>
+      <div class="detail-title">${s.titulo}</div>
+      <div class="kv-row"><span class="k">Morador</span><span class="v">${s.moradorNome}</span></div>
+      <div class="kv-row"><span class="k">Unidade</span><span class="v">Apto ${s.apto}</span></div>
+      <div class="kv-row"><span class="k">Localização</span><span class="v">${s.localizacao}</span></div>
+      <div class="kv-row"><span class="k">Data de Abertura</span><span class="v">${formatDateBR(s.criadoEm)}</span></div>
+    </div>
+
+    <div class="detail-card">
+      <div class="section-title" style="margin-bottom:10px;">Descrição</div>
+      <p class="desc-text">${s.descricao}</p>
+    </div>
+
+    <div class="detail-card">
+      <div class="section-title" style="margin-bottom:14px;">Histórico de Atualizações</div>
+      <div class="timeline">
+        ${s.historico.map(h=>`
+          <div class="tl-item ${h.done?'':'pending'}">
+            <div class="tl-dot">${h.done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>' : ''}</div>
+            <div class="tl-text"><strong>${h.status}</strong><span>${h.data}</span></div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div id="actionArea"></div>
+  `;
+
+  const actionArea = document.getElementById('actionArea');
+  if(nextStatus[s.status]){
+    actionArea.innerHTML = `<button class="btn btn-primary" id="advanceBtn">${nextLabel[s.status]}</button>`;
+    document.getElementById('advanceBtn').addEventListener('click', ()=>{
+      const now = new Date();
+      const dataLabel = now.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}).replace('.','') + ' · ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      s.historico.push({status:nextHistLabel[s.status], data:dataLabel, done:true});
+      s.status = nextStatus[s.status];
+      store.updateSolicitacao(s);
+      showToast('Status atualizado!');
+      draw();
+    });
+  }
+}
+
+if(!s){ document.getElementById('content').innerHTML = `<div class="empty-state"><h3>Solicitação não encontrada</h3></div>`; }
+else{ draw(); }
+</script>
+</body>
+</html>

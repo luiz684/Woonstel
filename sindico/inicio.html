@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Síndico — Convive</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-frame">
+  <div class="screen">
+    <div class="home-header">
+      <div class="avatar" id="avatar"></div>
+      <div class="greet">
+        <h2 id="greetName">Olá!</h2>
+        <p id="greetSub">Síndico</p>
+      </div>
+      <button class="icon-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        <span class="dot" id="notifDot" style="display:none;"></span>
+      </button>
+    </div>
+
+    <div id="noCondBanner" style="display:none;">
+      <div class="banner banner-amber">
+        <div class="banner-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/></svg>
+        </div>
+        <div>
+          <strong>Cadastre seu condomínio</strong>
+          <span>Você ainda não vinculou um condomínio à sua conta. <a href="cadastrar-condominio.html" style="text-decoration:underline;">Cadastrar agora</a></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="dashboard" style="display:none;">
+      <div class="stat-grid">
+        <div class="stat-card accent">
+          <div class="num" id="statPendentes">0</div>
+          <div class="lbl">Solicitações pendentes</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="statMoradores">0</div>
+          <div class="lbl">Moradores cadastrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="statReservas">0</div>
+          <div class="lbl">Reservas este mês</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="statResolvidas">0</div>
+          <div class="lbl">Resolvidas no total</div>
+        </div>
+      </div>
+
+      <div class="section-title">Painel de Gestão</div>
+      <div class="quick-grid">
+        <a class="quick-card" href="solicitacoes.html">
+          <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 3v4M4 8h16v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/></svg></div>
+          <span>Solicitações</span>
+        </a>
+        <a class="quick-card" href="moradores.html">
+          <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.3 2.9-6 6.5-6s6.5 2.7 6.5 6"/><circle cx="18" cy="9" r="2.6"/><path d="M15.8 14.2c2.5.4 4.7 2.4 4.7 5.3"/></svg></div>
+          <span>Moradores</span>
+        </a>
+        <a class="quick-card" href="reservas.html">
+          <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+          <span>Reservas de área</span>
+        </a>
+        <a class="quick-card" href="avisos.html">
+          <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></div>
+          <span>Avisos</span>
+        </a>
+        <a class="quick-card" href="cadastrar-condominio.html">
+          <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg></div>
+          <span>Dados do condomínio</span>
+        </a>
+      </div>
+
+      <div class="section-title">Solicitações recentes</div>
+      <div class="list" id="recentList"></div>
+    </div>
+  </div>
+</div>
+<script src="../js/data.js"></script>
+<script src="../js/bottomnav-sindico.js"></script>
+<script>
+const user = requireAuth('sindico');
+document.getElementById('avatar').textContent = initials(user.nome);
+document.getElementById('greetName').textContent = `Olá, ${user.nome.split(' ')[0]}!`;
+
+const cond = store.getCondominios().find(c=>c.sindicoId===user.id);
+const badgeMap = {Pendente:'badge-amber', 'Em andamento':'badge-blue', Resolvida:'badge-green'};
+
+if(!cond){
+  document.getElementById('noCondBanner').style.display='block';
+  document.getElementById('greetSub').textContent = 'Síndico';
+}else{
+  document.getElementById('greetSub').textContent = `Síndico · ${cond.nome}`;
+  document.getElementById('dashboard').style.display='block';
+
+  const sols = store.getSolicitacoesByCondominio(cond.id);
+  const pendentes = sols.filter(s=>s.status==='Pendente');
+  const moradores = store.getMoradoresByCondominio(cond.id);
+  const reservas = store.getReservasByCondominio(cond.id);
+  const resolvidas = sols.filter(s=>s.status==='Resolvida');
+
+  document.getElementById('statPendentes').textContent = pendentes.length;
+  document.getElementById('statMoradores').textContent = moradores.length;
+  document.getElementById('statReservas').textContent = reservas.length;
+  document.getElementById('statResolvidas').textContent = resolvidas.length;
+  if(pendentes.length) document.getElementById('notifDot').style.display='block';
+
+  const recent = sols.slice(0,3);
+  document.getElementById('recentList').innerHTML = recent.length ? recent.map(s=>`
+    <a class="req-card" href="solicitacao-detalhes.html?id=${s.id}">
+      <div class="badge-row"><span class="badge ${badgeMap[s.status]}">${s.status}</span></div>
+      <h3>${s.titulo}</h3>
+      <p class="meta">${s.moradorNome} · Apto ${s.apto}</p>
+    </a>`).join('') : `<div class="empty-state" style="padding:24px 0;"><p>Nenhuma solicitação registrada ainda.</p></div>`;
+}
+renderSindicoNav('inicio');
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minhas Reservas — Convive</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-frame">
+  <div class="screen">
+    <div class="topbar">
+      <a class="back-btn" href="inicio.html">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1>Minhas Reservas</h1>
+      <a class="topbar-sub btn-sm btn-ghost btn" style="width:auto;" href="reservar-area.html">+ Nova</a>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+</div>
+<script src="../js/data.js"></script>
+<script src="../js/bottomnav-morador.js"></script>
+<script>
+const user = requireAuth('condomino');
+const reservas = store.getReservasByMorador(user.id);
+const el = document.getElementById('list');
+el.innerHTML = reservas.length ? reservas.map(r=>`
+  <div class="req-card">
+    <div class="badge-row"><span class="badge badge-green">${r.status}</span></div>
+    <h3>${r.areaNome}</h3>
+    <p class="meta">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')} · ${r.periodo}</p>
+    <p class="meta" style="margin-top:4px;"><strong>${r.valor>0 ? 'R$ '+r.valor.toFixed(2).replace('.',',') : 'Sem taxa'}</strong></p>
+  </div>`).join('') : `<div class="empty-state">
+    <div class="ei"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/></svg></div>
+    <h3>Nenhuma reserva ainda</h3><p>Reserve uma área comum no atalho da tela inicial.</p></div>`;
+renderMoradorNav('reservas');
+</script>
+</body>
+</html>

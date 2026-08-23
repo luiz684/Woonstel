@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reservar Área — Convive</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-frame">
+  <div class="screen no-nav">
+    <div class="topbar">
+      <a class="back-btn" href="inicio.html">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1>Reservar Área</h1>
+    </div>
+
+    <div class="area-card">
+      <div style="width:56px;height:56px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--primary);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>
+      </div>
+      <div>
+        <h4 id="areaNome">Salão de Festas</h4>
+        <p id="areaCap">Capacidade: até 50 pessoas</p>
+        <p class="fee" id="areaFee">Taxa: R$ 150,00</p>
+      </div>
+    </div>
+
+    <form id="reservaForm" novalidate>
+      <div class="field">
+        <label for="area">Área Selecionada</label>
+        <div class="input-wrap">
+          <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>
+          <select id="area"></select>
+          <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="data">Data da Reserva</label>
+        <div class="input-wrap">
+          <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          <input type="date" id="data">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="horario">Horário de Início</label>
+        <div class="input-wrap">
+          <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <input type="time" id="horario" value="12:00">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="periodo">Período</label>
+        <div class="input-wrap">
+          <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <select id="periodo">
+            <option>Manhã (08:00 às 12:00)</option>
+            <option selected>Tarde (12:00 às 18:00)</option>
+            <option>Noite (18:00 às 23:00)</option>
+          </select>
+          <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <div class="total-row">
+        <span class="lbl">Valor total da reserva:</span>
+        <span class="val" id="valorTotal">R$ 150,00</span>
+      </div>
+
+      <label class="check-row">
+        <input type="checkbox" id="aceite">
+        Li e concordo com as regras de uso do espaço comum.
+      </label>
+
+      <button type="submit" class="btn btn-primary">Reservar área</button>
+    </form>
+  </div>
+</div>
+<script src="../js/data.js"></script>
+<script>
+const user = requireAuth('condomino');
+const areas = store.getAreas(user.condominioId);
+const areaSelect = document.getElementById('area');
+areaSelect.innerHTML = areas.map(a=>`<option value="${a.id}">${a.nome}</option>`).join('');
+
+function updateAreaInfo(){
+  const a = areas.find(x=>x.id===areaSelect.value);
+  if(!a) return;
+  document.getElementById('areaNome').textContent = a.nome;
+  document.getElementById('areaCap').textContent = 'Capacidade: ' + a.capacidade;
+  document.getElementById('areaFee').textContent = a.taxa > 0 ? `Taxa: R$ ${a.taxa.toFixed(2).replace('.',',')}` : 'Sem taxa de uso';
+  document.getElementById('valorTotal').textContent = a.taxa > 0 ? `R$ ${a.taxa.toFixed(2).replace('.',',')}` : 'R$ 0,00';
+}
+areaSelect.addEventListener('change', updateAreaInfo);
+updateAreaInfo();
+
+document.getElementById('reservaForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const data = document.getElementById('data').value;
+  if(!data){ showToast('Selecione a data da reserva.'); return; }
+  if(!document.getElementById('aceite').checked){ showToast('Você precisa aceitar as regras de uso.'); return; }
+
+  const a = areas.find(x=>x.id===areaSelect.value);
+  store.saveReserva({
+    id:'r'+Date.now(), condominioId:user.condominioId, areaId:a.id, areaNome:a.nome,
+    moradorId:user.id, moradorNome:user.nome, apto:user.apto,
+    data, horario:document.getElementById('horario').value, periodo:document.getElementById('periodo').value,
+    valor:a.taxa, status:'Confirmada'
+  });
+  showToast('Área reservada com sucesso!');
+  setTimeout(()=>{ window.location.href = 'reservas.html'; }, 1000);
+});
+</script>
+</body>
+</html>

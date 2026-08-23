@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfil — Convive</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-frame">
+  <div class="screen">
+    <div class="topbar"><h1>Perfil</h1></div>
+
+    <div style="text-align:center;margin-bottom:24px;">
+      <div class="avatar" id="avatar" style="width:72px;height:72px;font-size:24px;margin:0 auto 12px;"></div>
+      <h2 id="nome" style="font-size:17px;font-weight:700;"></h2>
+      <p id="sub" style="font-size:13px;color:var(--text-muted);margin-top:2px;"></p>
+    </div>
+
+    <div class="detail-card">
+      <div class="kv-row"><span class="k">Email</span><span class="v" id="email"></span></div>
+      <div class="kv-row"><span class="k">CPF</span><span class="v" id="cpf"></span></div>
+      <div class="kv-row"><span class="k">Unidade</span><span class="v" id="apto"></span></div>
+      <div class="kv-row"><span class="k">Condomínio</span><span class="v" id="cond"></span></div>
+    </div>
+
+    <button class="btn btn-danger-ghost" id="logoutBtn">Sair da conta</button>
+  </div>
+</div>
+<script src="../js/data.js"></script>
+<script src="../js/bottomnav-morador.js"></script>
+<script>
+const user = requireAuth('condomino');
+const cond = store.getCondominio(user.condominioId);
+document.getElementById('avatar').textContent = initials(user.nome);
+document.getElementById('nome').textContent = user.nome;
+document.getElementById('sub').textContent = 'Condômino';
+document.getElementById('email').textContent = user.email;
+document.getElementById('cpf').textContent = user.cpf;
+document.getElementById('apto').textContent = user.apto;
+document.getElementById('cond').textContent = cond ? cond.nome : '—';
+document.getElementById('logoutBtn').addEventListener('click', logout);
+renderMoradorNav('perfil');
+</script>
+</body>
+</html>

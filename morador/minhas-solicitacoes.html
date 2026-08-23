@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minhas Solicitações — Convive</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-frame">
+  <div class="screen">
+    <div class="topbar">
+      <a class="back-btn" href="inicio.html">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1>Minhas Solicitações</h1>
+    </div>
+
+    <div class="search-row">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="busca" placeholder="Buscar solicitações...">
+      </div>
+      <button class="filter-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button>
+    </div>
+
+    <div class="list" id="list"></div>
+  </div>
+  <div id="navSlot"></div>
+</div>
+<script src="../js/data.js"></script>
+<script src="../js/bottomnav-morador.js"></script>
+<script>
+const user = requireAuth('condomino');
+const badgeMap = {Pendente:'badge-amber', 'Em andamento':'badge-blue', Resolvida:'badge-green'};
+const prioMap = {Alta:'badge-red', Média:'badge-amber', Baixa:'badge-gray'};
+
+function render(filter){
+  let list = store.getSolicitacoesByMorador(user.id).sort((a,b)=>new Date(b.criadoEm)-new Date(a.criadoEm));
+  if(filter) list = list.filter(s=>s.titulo.toLowerCase().includes(filter.toLowerCase()) || s.categoria.toLowerCase().includes(filter.toLowerCase()));
+
+  const el = document.getElementById('list');
+  if(!list.length){
+    el.innerHTML = `<div class="empty-state">
+      <div class="ei"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 5h6M9 3v4M4 8h16v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/></svg></div>
+      <h3>Nenhuma solicitação encontrada</h3><p>Suas solicitações de manutenção vão aparecer aqui.</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(s=>`
+    <a class="req-card" href="detalhes-solicitacao.html?id=${s.id}">
+      <div class="badge-row">
+        <span class="badge badge-gray">${s.categoria.toUpperCase()}</span>
+        <span class="badge ${badgeMap[s.status]}">${s.status}</span>
+      </div>
+      <h3>${s.titulo}</h3>
+      <p class="meta">Criado em ${formatDateBR(s.criadoEm)} · <strong>${s.prioridade} prioridade</strong></p>
+    </a>`).join('');
+}
+render();
+document.getElementById('busca').addEventListener('input', (e)=>render(e.target.value));
+renderMoradorNav('ocorrencias');
+</script>
+</body>
+</html>

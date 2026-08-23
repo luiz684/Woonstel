@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avisos — Convive</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-frame">
+  <div class="screen no-nav">
+    <div class="topbar">
+      <a class="back-btn" href="inicio.html">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1>Avisos e Comunicados</h1>
+    </div>
+
+    <div id="formWrap"></div>
+    <div class="section-title">Publicados</div>
+    <div class="list" id="list"></div>
+  </div>
+</div>
+<script src="../js/data.js"></script>
+<script>
+const user = requireAuth('sindico');
+const cond = store.getCondominios().find(c=>c.sindicoId===user.id);
+
+function renderList(){
+  const el = document.getElementById('list');
+  if(!cond){ el.innerHTML = ''; return; }
+  const avisos = store.getAvisos(cond.id);
+  el.innerHTML = avisos.length ? avisos.map(a=>`
+    <div class="req-card">
+      <h3>${a.titulo}</h3>
+      <p class="meta" style="margin:6px 0;">${a.mensagem}</p>
+      <p class="meta">${formatDateBR(a.data)}</p>
+    </div>`).join('') : `<div class="empty-state" style="padding:24px 0;"><p>Nenhum aviso publicado ainda.</p></div>`;
+}
+
+if(!cond){
+  document.getElementById('formWrap').innerHTML = `<div class="empty-state"><h3>Cadastre seu condomínio</h3><p>Você precisa cadastrar um condomínio antes de publicar avisos.</p></div>`;
+}else{
+  document.getElementById('formWrap').innerHTML = `
+    <form id="avisoForm" novalidate>
+      <div class="field">
+        <label for="titulo">Título do aviso</label>
+        <div class="input-wrap">
+          <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+          <input type="text" id="titulo" placeholder="Ex: Manutenção do elevador">
+        </div>
+      </div>
+      <div class="field">
+        <label for="mensagem">Mensagem</label>
+        <textarea id="mensagem" placeholder="Escreva o comunicado para os moradores..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Publicar aviso</button>
+    </form>
+  `;
+  document.getElementById('avisoForm').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const titulo = document.getElementById('titulo').value.trim();
+    const mensagem = document.getElementById('mensagem').value.trim();
+    if(!titulo || !mensagem){ showToast('Preencha o título e a mensagem.'); return; }
+    store.saveAviso({id:'v'+Date.now(), condominioId:cond.id, titulo, mensagem, autor:user.nome, data:new Date().toISOString()});
+    document.getElementById('titulo').value=''; document.getElementById('mensagem').value='';
+    showToast('Aviso publicado!');
+    renderList();
+  });
+}
+renderList();
+</script>
+</body>
+</html>

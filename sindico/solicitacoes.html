@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solicitações — Convive</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-frame">
+  <div class="screen">
+    <div class="topbar">
+      <a class="back-btn" href="inicio.html">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1>Solicitações</h1>
+    </div>
+
+    <div class="search-row">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="busca" placeholder="Buscar por morador ou título...">
+      </div>
+    </div>
+    <div class="chip-row" id="filterRow" style="margin-bottom:16px;">
+      <div class="chip active" data-value="Todas">Todas</div>
+      <div class="chip" data-value="Pendente">Pendentes</div>
+      <div class="chip" data-value="Em andamento">Em andamento</div>
+      <div class="chip" data-value="Resolvida">Resolvidas</div>
+    </div>
+
+    <div class="list" id="list"></div>
+  </div>
+</div>
+<script src="../js/data.js"></script>
+<script src="../js/bottomnav-sindico.js"></script>
+<script>
+const user = requireAuth('sindico');
+const cond = store.getCondominios().find(c=>c.sindicoId===user.id);
+const badgeMap = {Pendente:'badge-amber', 'Em andamento':'badge-blue', Resolvida:'badge-green'};
+let currentFilter = 'Todas';
+
+function render(){
+  if(!cond){ document.getElementById('list').innerHTML = `<div class="empty-state"><h3>Cadastre seu condomínio</h3><p>Você precisa cadastrar um condomínio para ver solicitações.</p></div>`; return; }
+  let list = store.getSolicitacoesByCondominio(cond.id).sort((a,b)=>new Date(b.criadoEm)-new Date(a.criadoEm));
+  const busca = document.getElementById('busca').value.toLowerCase();
+  if(currentFilter !== 'Todas') list = list.filter(s=>s.status===currentFilter);
+  if(busca) list = list.filter(s=>s.titulo.toLowerCase().includes(busca) || s.moradorNome.toLowerCase().includes(busca));
+
+  const el = document.getElementById('list');
+  if(!list.length){ el.innerHTML = `<div class="empty-state" style="padding:30px 0;"><p>Nenhuma solicitação encontrada.</p></div>`; return; }
+  el.innerHTML = list.map(s=>`
+    <a class="req-card" href="solicitacao-detalhes.html?id=${s.id}">
+      <div class="badge-row">
+        <span class="badge badge-gray">${s.categoria.toUpperCase()}</span>
+        <span class="badge ${badgeMap[s.status]}">${s.status}</span>
+      </div>
+      <h3>${s.titulo}</h3>
+      <p class="meta"><strong>${s.moradorNome}</strong> · Apto ${s.apto}</p>
+      <p class="meta">${formatDateBR(s.criadoEm)} · ${s.prioridade} prioridade</p>
+    </a>`).join('');
+}
+
+document.querySelectorAll('#filterRow .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#filterRow .chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter = chip.dataset.value;
+    render();
+  });
+});
+document.getElementById('busca').addEventListener('input', render);
+render();
+renderSindicoNav('solicitacoes');
+</script>
+</body>
+</html>

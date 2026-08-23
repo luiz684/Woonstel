@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reservas de Área — Convive</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-frame">
+  <div class="screen">
+    <div class="topbar">
+      <a class="back-btn" href="inicio.html">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1>Reservas de Área</h1>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+</div>
+<script src="../js/data.js"></script>
+<script src="../js/bottomnav-sindico.js"></script>
+<script>
+const user = requireAuth('sindico');
+const cond = store.getCondominios().find(c=>c.sindicoId===user.id);
+const el = document.getElementById('list');
+
+if(!cond){
+  el.innerHTML = `<div class="empty-state"><h3>Cadastre seu condomínio</h3></div>`;
+}else{
+  const reservas = store.getReservasByCondominio(cond.id).sort((a,b)=>new Date(a.data)-new Date(b.data));
+  el.innerHTML = reservas.length ? reservas.map(r=>`
+    <div class="req-card">
+      <div class="badge-row"><span class="badge badge-green">${r.status}</span></div>
+      <h3>${r.areaNome}</h3>
+      <p class="meta"><strong>${r.moradorNome}</strong> · Apto ${r.apto}</p>
+      <p class="meta">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')} · ${r.periodo}</p>
+    </div>`).join('') : `<div class="empty-state" style="padding:30px 0;"><p>Nenhuma reserva registrada ainda.</p></div>`;
+}
+renderSindicoNav('reservas');
+</script>
+</body>
+</html>

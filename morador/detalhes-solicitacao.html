@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detalhes da Solicitação — Convive</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-frame">
+  <div class="screen no-nav" id="screen">
+    <div class="topbar">
+      <a class="back-btn" href="minhas-solicitacoes.html">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1>Detalhes da Solicitação</h1>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+<script src="../js/data.js"></script>
+<script>
+const user = requireAuth('condomino');
+const id = new URLSearchParams(location.search).get('id');
+const s = store.getSolicitacao(id);
+const badgeMap = {Pendente:'badge-amber', 'Em andamento':'badge-blue', Resolvida:'badge-green'};
+const prioMap = {Alta:'badge-red', Média:'badge-amber', Baixa:'badge-gray'};
+
+if(!s || s.moradorId !== user.id){
+  document.getElementById('content').innerHTML = `<div class="empty-state"><h3>Solicitação não encontrada</h3></div>`;
+}else{
+  document.getElementById('content').innerHTML = `
+    <div class="detail-card">
+      <div class="badge-row">
+        <span class="badge badge-gray">${s.categoria.toUpperCase()}</span>
+        <span class="badge ${prioMap[s.prioridade]}">${s.prioridade} PRIORIDADE</span>
+        <span class="badge ${badgeMap[s.status]}">${s.status}</span>
+      </div>
+      <div class="detail-title">${s.titulo}</div>
+      <div class="kv-row"><span class="k">Localização</span><span class="v">${s.localizacao}</span></div>
+      <div class="kv-row"><span class="k">Data de Abertura</span><span class="v">${formatDateBR(s.criadoEm)}</span></div>
+    </div>
+
+    <div class="detail-card">
+      <div class="section-title" style="margin-bottom:10px;">Descrição</div>
+      <p class="desc-text">${s.descricao}</p>
+    </div>
+
+    ${s.foto ? `
+    <div class="detail-card">
+      <div class="section-title" style="margin-bottom:10px;">Foto Anexada</div>
+      <div class="photo-box" style="display:flex;align-items:center;justify-content:center;color:var(--text-faint);">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/></svg>
+      </div>
+    </div>` : ''}
+
+    <div class="detail-card">
+      <div class="section-title" style="margin-bottom:14px;">Histórico de Atualizações</div>
+      <div class="timeline">
+        ${s.historico.map(h=>`
+          <div class="tl-item ${h.done?'':'pending'}">
+            <div class="tl-dot">
+              ${h.done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>' : ''}
+            </div>
+            <div class="tl-text"><strong>${h.status}</strong><span>${h.data}</span></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
