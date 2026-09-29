@@ -1,3 +1,0 @@
-Meu primeiro teste com Git!
-Estou aprendendo a fazer commits.
-Alteração feita depois do primeiro commit.
