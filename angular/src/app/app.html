@@ -1,0 +1,7 @@
+<div class="app-frame">
+  <router-outlet />
+</div>
+
+@if (toast.message(); as msg) {
+  <div class="toast show">{{ msg }}</div>
+}

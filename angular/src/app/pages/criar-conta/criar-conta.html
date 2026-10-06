@@ -1,0 +1,112 @@
+<div class="screen no-nav">
+  <div class="auth-header">
+    <div class="Logo">
+      <img src="Woonstel.png" alt="Logo" width="70" height="70">
+    </div>
+    <h1>Criar nova conta</h1>
+  </div>
+
+  <form (ngSubmit)="criarConta()">
+    <div class="field">
+      <label for="nome">Nome Completo</label>
+      <div class="input-wrap">
+        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="text" id="nome" name="nome" [(ngModel)]="nome" placeholder="Ex: Ana Carolina Souza Silva...">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <div class="input-wrap">
+        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M3 7l9 6 9-6" stroke="currentColor" stroke-width="1.8"/></svg>
+        <input type="email" id="email" name="email" [(ngModel)]="email" placeholder="Ex: Anacarolinasilva6710@gmail.com...">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="cpf">CPF</label>
+      <div class="input-wrap">
+        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" maxlength="14"
+               [value]="cpf" (input)="onCpf($event)">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="senha">Senha</label>
+      <div class="input-wrap">
+        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="1.8"/></svg>
+        <input [type]="mostrarSenha() ? 'text' : 'password'" id="senha" name="senha"
+               [(ngModel)]="senha" placeholder="Crie uma senha" style="padding-right:40px;">
+        <button type="button" class="toggle-pass" (click)="mostrarSenha.set(!mostrarSenha())">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="field" [class.error]="erroConfirmar()">
+      <label for="confirmar">Confirmar Senha</label>
+      <div class="input-wrap">
+        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="1.8"/></svg>
+        <input [type]="mostrarConfirmar() ? 'text' : 'password'" id="confirmar" name="confirmar"
+               [(ngModel)]="confirmar" placeholder="Repita a senha" style="padding-right:40px;">
+        <button type="button" class="toggle-pass" (click)="mostrarConfirmar.set(!mostrarConfirmar())">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+      </div>
+      <div class="field-error-msg">As senhas não coincidem.</div>
+    </div>
+
+    <div class="field">
+      <label for="tipo">Tipo de Usuário</label>
+      <div class="input-wrap">
+        <select id="tipo" name="tipo" [(ngModel)]="tipo">
+          <option value="" disabled>Selecione</option>
+          <option value="condomino">Condômino</option>
+          <option value="sindico">Síndico</option>
+          <option value="funcionario">Funcionário</option>
+        </select>
+        <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    @switch (tipo) {
+      @case ('condomino') {
+        <div class="field">
+          <label for="condominioSelect">Condomínio</label>
+          <div class="input-wrap">
+            <select id="condominioSelect" name="condominioId" [(ngModel)]="condominioId">
+              @for (c of condominios; track c.id) {
+                <option [value]="c.id">{{ c.nome }}</option>
+              }
+              <option value="">Não encontrei meu condomínio</option>
+            </select>
+            <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="field">
+          <label for="apto">Unidade / Apto</label>
+          <div class="input-wrap">
+            <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            <input type="text" id="apto" name="apto" [(ngModel)]="apto" placeholder="Ex: 142B">
+          </div>
+        </div>
+        <div class="role-note">Selecione o condomínio informado pelo seu síndico. Ele vai validar seu cadastro como morador.</div>
+      }
+      @case ('sindico') {
+        <div class="role-note">
+          Como síndico, no próximo passo você vai cadastrar o condomínio que vai administrar no Convive.
+        </div>
+      }
+      @case ('funcionario') {
+        <div class="role-note">
+          A área do funcionário está em construção. Sua conta será criada e liberada assim que o síndico configurar seu acesso.
+        </div>
+      }
+    }
+
+    <button type="submit" class="btn btn-primary" style="margin-top:8px;">Criar conta</button>
+  </form>
+
+  <p class="auth-footer">Já tem conta? <a routerLink="/">Entrar</a></p>
+</div>
