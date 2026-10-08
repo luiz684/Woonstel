@@ -1,0 +1,81 @@
+<div class="screen">
+  @if (perfil(); as p) {
+    <div class="home-header">
+      <div class="avatar">{{ iniciais(p.nome) }}</div>
+      <div class="greet">
+        <h2>Olá, {{ primeiroNome(p.nome) }}!</h2>
+        <p>Síndico@if (cond(); as c) { · {{ c.nome }} }</p>
+      </div>
+      <button class="icon-btn" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        @if (pendentes() > 0) { <span class="dot"></span> }
+        <button class="icon-btn" type="button" (click)="sair()" title="Sair da conta" aria-label="Sair da conta">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+    <path d="M16 17l5-5-5-5"/>
+    <path d="M21 12H9"/>
+  </svg>
+</button>
+      </button>
+    </div>
+  }
+
+  @if (carregado() && !cond()) {
+    <div class="banner banner-amber">
+      <div class="banner-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/></svg>
+      </div>
+      <div>
+        <strong>Cadastre seu condomínio</strong>
+        <span>Você ainda não vinculou um condomínio à sua conta.
+          <a routerLink="/sindico/cadastrar-condominio" style="text-decoration:underline;">Cadastrar agora</a></span>
+      </div>
+    </div>
+  }
+
+  @if (cond()) {
+    <div class="stat-grid">
+      <div class="stat-card accent"><div class="num">{{ pendentes() }}</div><div class="lbl">Solicitações pendentes</div></div>
+      <div class="stat-card"><div class="num">{{ moradores() }}</div><div class="lbl">Moradores cadastrados</div></div>
+      <div class="stat-card"><div class="num">{{ reservas() }}</div><div class="lbl">Reservas este mês</div></div>
+      <div class="stat-card"><div class="num">{{ resolvidas() }}</div><div class="lbl">Resolvidas no total</div></div>
+    </div>
+
+    <div class="section-title">Painel de Gestão</div>
+    <div class="quick-grid">
+      <a class="quick-card" routerLink="/sindico/solicitacoes">
+        <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 3v4M4 8h16v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/></svg></div>
+        <span>Solicitações</span>
+      </a>
+      <a class="quick-card" routerLink="/sindico/moradores">
+        <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.3 2.9-6 6.5-6s6.5 2.7 6.5 6"/><circle cx="18" cy="9" r="2.6"/><path d="M15.8 14.2c2.5.4 4.7 2.4 4.7 5.3"/></svg></div>
+        <span>Moradores</span>
+      </a>
+      <a class="quick-card" routerLink="/sindico/reservas">
+        <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+        <span>Reservas de área</span>
+      </a>
+      <a class="quick-card" routerLink="/sindico/avisos">
+        <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></div>
+        <span>Avisos</span>
+      </a>
+      <a class="quick-card" routerLink="/sindico/cadastrar-condominio">
+        <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg></div>
+        <span>Dados do condomínio</span>
+      </a>
+    </div>
+
+    <div class="section-title">Solicitações recentes</div>
+    <div class="list">
+      @for (s of recentes(); track s.id) {
+        <a class="req-card" [routerLink]="['/sindico/solicitacao', s.id]">
+          <div class="badge-row"><span class="badge" [class]="'badge ' + badgeMap[s.status]">{{ s.status }}</span></div>
+          <h3>{{ s.titulo }}</h3>
+          <p class="meta">{{ s.morador_nome }} · Apto {{ s.apto }}</p>
+        </a>
+      } @empty {
+        <div class="empty-state" style="padding:24px 0;"><p>Nenhuma solicitação registrada ainda.</p></div>
+      }
+    </div>
+  }
+</div>

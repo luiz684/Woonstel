@@ -76,9 +76,9 @@
           <label for="condominioSelect">Condomínio</label>
           <div class="input-wrap">
             <select id="condominioSelect" name="condominioId" [(ngModel)]="condominioId">
-              @for (c of condominios; track c.id) {
+              @for (c of condominios(); track c.id) {
                 <option [value]="c.id">{{ c.nome }}</option>
-              }
+             }
               <option value="">Não encontrei meu condomínio</option>
             </select>
             <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>

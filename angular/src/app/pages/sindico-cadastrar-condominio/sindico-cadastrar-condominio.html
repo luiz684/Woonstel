@@ -1,0 +1,51 @@
+<div class="screen no-nav">
+  <div class="topbar">
+    <a class="back-btn" routerLink="/sindico/inicio" [style.visibility]="onboarding ? 'hidden' : 'visible'">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+    </a>
+    <h1>Cadastrar Condomínio</h1>
+  </div>
+
+  @if (onboarding) {
+    <div class="role-note">
+      Falta só isso: cadastre o condomínio que você administra para liberar seu painel de síndico.
+    </div>
+  }
+
+  <form (ngSubmit)="salvar()">
+    <div class="field">
+      <label for="nome">Nome do Condomínio</label>
+      <div class="input-wrap">
+        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" /></svg>
+        <input type="text" id="nome" name="nome" [(ngModel)]="nome" placeholder="Ex: Residencial Bosque Verde">
+      </div>
+    </div>
+    <div class="field">
+      <label for="endereco">Endereço</label>
+      <div class="input-wrap">
+        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+        <input type="text" id="endereco" name="endereco" [(ngModel)]="endereco" placeholder="Rua, número, bairro, cidade">
+      </div>
+    </div>
+    <div class="field">
+      <label for="unidades">Número de Unidades</label>
+      <div class="input-wrap">
+        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1" /><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2" /></svg>
+        <input type="number" id="unidades" name="unidades" [(ngModel)]="unidades" placeholder="Ex: 96" min="1">
+      </div>
+    </div>
+    <div class="field">
+      <label for="blocos">Número de Blocos / Torres</label>
+      <div class="input-wrap">
+        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="7" height="13" /><rect x="14" y="4" width="7" height="17" /></svg>
+        <input type="number" id="blocos" name="blocos" [(ngModel)]="blocos" placeholder="Ex: 4" min="1">
+      </div>
+    </div>
+
+    <div class="role-note">O código de convite gerado será usado pelos moradores para vincular a conta deles a este condomínio no momento do cadastro.</div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="salvando()">
+      {{ editando() ? 'Salvar alterações' : 'Cadastrar condomínio' }}
+    </button>
+  </form>
+</div>

@@ -22,10 +22,10 @@ export class Login {
   mostrarSenha = signal(false);
   erro = signal({ cpf: false, tipo: false, senha: false });
 
-  ngOnInit() {
-    const u = this.store.getCurrentUser();
-    if (u) this.irParaHome(u.tipo);
-  }
+  async ngOnInit() {
+  const u = await this.store.getCurrentProfile();
+  if (u) this.irParaHome(u.tipo);
+}
 
   onCpf(e: Event) {
     const el = e.target as HTMLInputElement;
@@ -33,23 +33,22 @@ export class Login {
     el.value = this.cpf;
   }
 
-  entrar() {
-    const erro = {
-      cpf: this.cpf.length < 14,
-      tipo: !this.tipo,
-      senha: !this.senha,
-    };
-    this.erro.set(erro);
-    if (erro.cpf || erro.tipo || erro.senha) return;
+  async entrar() {
+  const erro = {
+    cpf: this.cpf.length < 14,
+    tipo: !this.tipo,
+    senha: !this.senha,
+  };
+  this.erro.set(erro);
+  if (erro.cpf || erro.tipo || erro.senha) return;
 
-    const user = this.store.findUserByCpfTipo(this.cpf, this.tipo);
-    if (!user || user.senha !== this.senha) {
-      this.toast.show('CPF, tipo de usuário ou senha incorretos.');
-      return;
-    }
-    this.store.setSession(user.id);
-    this.irParaHome(user.tipo);
+  const user = await this.store.signIn(this.cpf, this.tipo, this.senha);
+  if (!user) {
+    this.toast.show('CPF, tipo de usuário ou senha incorretos.');
+    return;
   }
+  this.irParaHome(user.tipo);
+}
 
   private irParaHome(tipo: string) {
     

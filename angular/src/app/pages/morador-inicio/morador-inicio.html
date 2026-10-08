@@ -1,0 +1,67 @@
+<div class="screen">
+  @if (perfil(); as p) {
+    <div class="home-header">
+      <div class="avatar">{{ iniciais(p.nome) }}</div>
+      <div class="greet">
+        <h2>Olá, {{ primeiroNome(p.nome) }}!</h2>
+        <p>Apto {{ p.apto }} · {{ cond()?.nome }}</p>
+      </div>
+      <button class="icon-btn" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        <span class="dot"></span>
+      </button>
+      <button class="icon-btn" type="button" (click)="sair()" title="Sair da conta" aria-label="Sair da conta">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+    <path d="M16 17l5-5-5-5"/>
+    <path d="M21 12H9"/>
+  </svg>
+</button>
+    </div>
+  }
+
+  @if (pendentes() > 0) {
+    <div class="banner banner-amber">
+      <div class="banner-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.8 17a1.7 1.7 0 001.5 2.5h15.4a1.7 1.7 0 001.5-2.5L13.7 3.9a1.7 1.7 0 00-3.4 0z"/></svg>
+      </div>
+      <div>
+        <strong>Ocorrência pendente</strong>
+        <span>{{ pendentes() }} solicitação(ões) aguardando retorno da administração.</span>
+      </div>
+    </div>
+  }
+
+  <div class="section-title">Atalhos Rápidos</div>
+  <div class="quick-grid">
+    <a class="quick-card" routerLink="/morador/solicitar-manutencao">
+      <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 01-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 015.4-5.4l-3-3z"/></svg></div>
+      <span>Solicitar manutenção</span>
+    </a>
+    <a class="quick-card" routerLink="/morador/minhas-solicitacoes">
+      <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 3v4M4 8h16v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/></svg></div>
+      <span>Minhas solicitações</span>
+    </a>
+    <a class="quick-card" routerLink="/morador/reservar-area">
+      <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+      <span>Reservar área</span>
+    </a>
+    <a class="quick-card" routerLink="/morador/reservas">
+      <div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 012-2h10a2 2 0 012 2v16z"/></svg></div>
+      <span>Minhas reservas</span>
+    </a>
+  </div>
+
+  <div class="section-title">Avisos do condomínio</div>
+  <div class="list">
+    @for (a of avisos(); track a.id) {
+      <div class="req-card">
+        <h3>{{ a.titulo }}</h3>
+        <p class="meta" style="margin-bottom:6px;">{{ a.mensagem }}</p>
+        <p class="meta">{{ data(a.created_at) }} · {{ a.autor }}</p>
+      </div>
+    } @empty {
+      <div class="empty-state" style="padding:24px 0;"><p>Nenhum aviso por enquanto.</p></div>
+    }
+  </div>
+</div>
