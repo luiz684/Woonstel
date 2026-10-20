@@ -12,3 +12,23 @@ export function primeiroNome(nome: string): string {
 export function formatDateBR(iso: string): string {
   return new Date(iso).toLocaleDateString('pt-BR');
 }
+
+export function formatDateOnlyBR(iso: string): string {
+  return new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR');
+}
+
+export function brl(valor: number): string {
+  return 'R$ ' + Number(valor).toFixed(2).replace('.', ',');
+}
+
+export const BADGE_STATUS: Record<string, string> = {
+  'Pendente': 'badge-amber',
+  'Em andamento': 'badge-blue',
+  'Resolvida': 'badge-green',
+};
+
+export const BADGE_PRIO: Record<string, string> = {
+  'Alta': 'badge-red',
+  'Média': 'badge-amber',
+  'Baixa': 'badge-gray',
+};

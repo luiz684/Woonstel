@@ -2,10 +2,12 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Aviso, CondominioCompleto, Profile, StoreService } from '../../services/store';
 import { formatDateBR, initials, primeiroNome } from '../../utils/format';
+import { BottomNavMorador } from '../../components/bottom-nav-morador/bottom-nav-morador';
+
 
 @Component({
   selector: 'app-morador-inicio',
-  imports: [RouterLink],
+  imports: [RouterLink, BottomNavMorador],
   templateUrl: './morador-inicio.html',
   styleUrl: './morador-inicio.css',
 })

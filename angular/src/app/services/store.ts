@@ -2,8 +2,44 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_KEY } from '../supabase.config';
 
+
 export type Tipo = 'condomino' | 'sindico' | 'funcionario';
 
+export interface HistoricoItem {
+  status: string;
+  data: string;
+  done: boolean;
+}
+
+export interface SolicitacaoDetalhe {
+  id: string;
+  morador_id: string;
+  titulo: string;
+  categoria: string | null;
+  prioridade: 'Baixa' | 'Média' | 'Alta' | null;
+  status: 'Pendente' | 'Em andamento' | 'Resolvida';
+  localizacao: string | null;
+  descricao: string | null;
+  foto: boolean;
+  historico: HistoricoItem[];
+  created_at: string;
+}
+
+export interface Area {
+  id: string;
+  nome: string;
+  capacidade: string | null;
+  taxa: number;
+}
+
+export interface Reserva {
+  id: string;
+  area_nome: string | null;
+  data: string;
+  periodo: string | null;
+  valor: number;
+  status: string;
+}
 export interface CondominioCompleto {
   id: string;
   nome: string;
@@ -165,14 +201,14 @@ export class StoreService {
     return (data as Solicitacao[]) ?? [];
   }
 
-  async getSolicitacoesByMorador(moradorId: string): Promise<Solicitacao[]> {
-    const { data } = await this.supabase
-      .from('solicitacoes')
-      .select('id, titulo, status, morador_nome, apto')
-      .eq('morador_id', moradorId)
-      .order('created_at', { ascending: false });
-    return (data as Solicitacao[]) ?? [];
-  }
+async getSolicitacoesByMorador(moradorId: string): Promise<SolicitacaoDetalhe[]> {
+  const { data } = await this.supabase
+    .from('solicitacoes')
+    .select('*')
+    .eq('morador_id', moradorId)
+    .order('created_at', { ascending: false });
+  return (data as SolicitacaoDetalhe[]) ?? [];
+}
 
   async countMoradores(condId: string): Promise<number> {
     const { count } = await this.supabase
@@ -196,4 +232,76 @@ export class StoreService {
       .order('created_at', { ascending: false });
     return (data as Aviso[]) ?? [];
   }
+
+  async getAreas(condominioId: string | null): Promise<Area[]> {
+  if (!condominioId) return [];
+  const { data, error } = await this.supabase
+    .from('areas')
+    .select('id, nome, capacidade, taxa')
+    .eq('condominio_id', condominioId)
+    .order('nome');
+  if (error) console.error(error);
+  return (data as Area[]) ?? [];
+}
+
+async getSolicitacao(id: string): Promise<SolicitacaoDetalhe | null> {
+  const { data, error } = await this.supabase
+    .from('solicitacoes')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) console.error(error);
+  return (data as SolicitacaoDetalhe) ?? null;
+}
+
+async getReservasDoMorador(moradorId: string): Promise<Reserva[]> {
+  const { data, error } = await this.supabase
+    .from('reservas')
+    .select('id, area_nome, data, periodo, valor, status')
+    .eq('morador_id', moradorId)
+    .order('data', { ascending: false });
+  if (error) console.error(error);
+  return (data as Reserva[]) ?? [];
+}
+
+async criarReserva(
+  perfil: Profile,
+  area: Area,
+  r: { data: string; horario: string; periodo: string },
+) {
+  return this.supabase.from('reservas').insert({
+    condominio_id: perfil.condominio_id,
+    morador_id: perfil.id,
+    area_id: area.id,
+    area_nome: area.nome,
+    data: r.data,
+    horario: r.horario,
+    periodo: r.periodo,
+    valor: area.taxa,
+    status: 'Confirmada',
+  });
+}
+
+async criarSolicitacao(
+  perfil: Profile,
+  s: {
+    titulo: string; categoria: string; descricao: string; localizacao: string;
+    prioridade: string; foto: boolean; dataLabel: string;
+  },
+) {
+  return this.supabase.from('solicitacoes').insert({
+    condominio_id: perfil.condominio_id,
+    morador_id: perfil.id,
+    morador_nome: perfil.nome,
+    apto: perfil.apto,
+    titulo: s.titulo,
+    categoria: s.categoria,
+    descricao: s.descricao,
+    localizacao: s.localizacao,
+    prioridade: s.prioridade,
+    foto: s.foto,
+    status: 'Pendente',
+    historico: [{ status: 'Solicitação registrada', data: s.dataLabel, done: true }],
+  });
+}
 }
