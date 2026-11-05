@@ -1,0 +1,25 @@
+<div class="screen no-nav">
+  <div class="topbar">
+    <a class="back-btn" routerLink="/sindico/inicio">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Moradores ({{ moradores().length }})</h1>
+  </div>
+
+  <div class="list">
+    @for (m of moradores(); track m.id) {
+      <div class="req-card" style="display:flex;align-items:center;gap:12px;">
+        <div class="avatar">{{ iniciais(m.nome) }}</div>
+        <div>
+          <h3>{{ m.nome }}</h3>
+          <p class="meta">Apto {{ m.apto }} · {{ m.email }}</p>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state">
+        <h3>Nenhum morador cadastrado</h3>
+        <p>Os moradores que escolherem o seu condomínio no cadastro aparecem aqui.</p>
+      </div>
+    }
+  </div>
+</div>

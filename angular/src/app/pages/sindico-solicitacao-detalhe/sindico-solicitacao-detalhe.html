@@ -1,0 +1,74 @@
+<div class="screen no-nav">
+  <div class="topbar">
+    <a class="back-btn" routerLink="/sindico/solicitacoes">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Detalhes da Solicitação</h1>
+  </div>
+
+  @if (carregado()) {
+    @if (s(); as sol) {
+      <div class="detail-card">
+        <div class="badge-row">
+          <span class="badge badge-gray">{{ sol.categoria?.toUpperCase() }}</span>
+          @if (sol.prioridade) {
+            <span class="badge" [class]="prio[sol.prioridade]">{{ sol.prioridade }} PRIORIDADE</span>
+          }
+          <span class="badge" [class]="badge[sol.status]">{{ sol.status }}</span>
+        </div>
+        <div class="detail-title">{{ sol.titulo }}</div>
+        <div class="kv-row"><span class="k">Morador</span><span class="v">{{ sol.morador_nome }}</span></div>
+        <div class="kv-row"><span class="k">Unidade</span><span class="v">{{ sol.apto }}</span></div>
+        <div class="kv-row"><span class="k">Localização</span><span class="v">{{ sol.localizacao }}</span></div>
+        <div class="kv-row"><span class="k">Data de Abertura</span><span class="v">{{ data(sol.created_at) }}</span></div>
+      </div>
+
+      <div class="detail-card">
+        <div class="section-title" style="margin-bottom:10px;">Descrição</div>
+        <p class="desc-text">{{ sol.descricao }}</p>
+      </div>
+
+      @if (sol.foto_path) {
+        <div class="detail-card">
+          <div class="section-title" style="margin-bottom:10px;">Foto Anexada</div>
+          @if (fotoUrl(); as url) {
+            <img [src]="url" alt="Foto da solicitação" style="width:100%;border-radius:12px;display:block;">
+          } @else if (fotoErro()) {
+            <p class="meta">Não foi possível carregar a foto.</p>
+          } @else {
+            <p class="meta">Carregando foto...</p>
+          }
+        </div>
+      }
+
+      <div class="detail-card">
+        <div class="section-title" style="margin-bottom:14px;">Histórico de Atualizações</div>
+        <div class="timeline">
+          @for (h of sol.historico; track $index) {
+            <div class="tl-item" [class.pending]="!h.done">
+              <div class="tl-dot">
+                @if (h.done) {
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                }
+              </div>
+              <div class="tl-text"><strong>{{ h.status }}</strong><span>{{ h.data }}</span></div>
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (sol.status === 'Pendente') {
+        <button class="btn btn-primary" type="button" [disabled]="salvando()" (click)="mudarStatus('Em andamento')">
+          Colocar em andamento
+        </button>
+      }
+      @if (sol.status !== 'Resolvida') {
+        <button class="btn btn-ghost" type="button" style="margin-top:10px;" [disabled]="salvando()" (click)="mudarStatus('Resolvida')">
+          Marcar como resolvida
+        </button>
+      }
+    } @else {
+      <div class="empty-state"><h3>Solicitação não encontrada</h3></div>
+    }
+  }
+</div>

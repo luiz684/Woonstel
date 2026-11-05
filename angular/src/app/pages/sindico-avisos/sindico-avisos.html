@@ -1,0 +1,39 @@
+<div class="screen no-nav">
+  <div class="topbar">
+    <a class="back-btn" routerLink="/sindico/inicio">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Avisos</h1>
+    <button class="topbar-sub btn-sm btn-ghost btn" type="button" style="width:auto;" (click)="mostrandoForm.set(!mostrandoForm())">
+      {{ mostrandoForm() ? 'Cancelar' : '+ Novo' }}
+    </button>
+  </div>
+
+  @if (mostrandoForm()) {
+    <form (ngSubmit)="publicar()" style="margin-bottom:20px;">
+      <div class="field">
+        <label for="titulo">Título</label>
+        <div class="input-wrap">
+          <input type="text" id="titulo" name="titulo" [(ngModel)]="titulo" placeholder="Ex: Manutenção do elevador">
+        </div>
+      </div>
+      <div class="field">
+        <label for="mensagem">Mensagem</label>
+        <textarea id="mensagem" name="mensagem" [(ngModel)]="mensagem" placeholder="Escreva o aviso para os moradores..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" [disabled]="salvando()">Publicar aviso</button>
+    </form>
+  }
+
+  <div class="list">
+    @for (a of avisos(); track a.id) {
+      <div class="req-card">
+        <h3>{{ a.titulo }}</h3>
+        <p class="meta" style="margin-bottom:6px;">{{ a.mensagem }}</p>
+        <p class="meta">{{ data(a.created_at) }} · {{ a.autor }}</p>
+      </div>
+    } @empty {
+      <div class="empty-state"><h3>Nenhum aviso publicado</h3></div>
+    }
+  </div>
+</div>

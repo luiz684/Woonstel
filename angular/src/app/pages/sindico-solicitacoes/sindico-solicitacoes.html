@@ -1,0 +1,33 @@
+<div class="screen">
+  <div class="topbar">
+    <a class="back-btn" routerLink="/sindico/inicio">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Solicitações</h1>
+  </div>
+
+  <div class="chip-row" style="margin-bottom:16px;">
+    @for (f of filtros; track f) {
+      <div class="chip" [class.active]="filtro() === f" (click)="filtro.set(f)">{{ f }}</div>
+    }
+  </div>
+
+  <div class="list">
+    @for (s of lista(); track s.id) {
+      <a class="req-card" [routerLink]="['/sindico/solicitacao', s.id]">
+        <div class="badge-row">
+          <span class="badge badge-gray">{{ s.categoria?.toUpperCase() }}</span>
+          <span class="badge" [class]="badge[s.status]">{{ s.status }}</span>
+        </div>
+        <h3>{{ s.titulo }}</h3>
+        <p class="meta">{{ s.morador_nome }} · Apto {{ s.apto }} · {{ data(s.created_at) }}</p>
+      </a>
+    } @empty {
+      <div class="empty-state">
+        <h3>Nenhuma solicitação encontrada</h3>
+        <p>As solicitações dos moradores vão aparecer aqui.</p>
+      </div>
+    }
+  </div>
+</div>
+<app-bottom-nav-sindico active="solicitacoes" />

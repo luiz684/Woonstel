@@ -2,69 +2,7 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_KEY } from '../supabase.config';
 
-
 export type Tipo = 'condomino' | 'sindico' | 'funcionario';
-
-export interface HistoricoItem {
-  status: string;
-  data: string;
-  done: boolean;
-}
-
-export interface SolicitacaoDetalhe {
-  id: string;
-  morador_id: string;
-  titulo: string;
-  categoria: string | null;
-  prioridade: 'Baixa' | 'Média' | 'Alta' | null;
-  status: 'Pendente' | 'Em andamento' | 'Resolvida';
-  localizacao: string | null;
-  descricao: string | null;
-  foto: boolean;
-  historico: HistoricoItem[];
-  created_at: string;
-}
-
-export interface Area {
-  id: string;
-  nome: string;
-  capacidade: string | null;
-  taxa: number;
-}
-
-export interface Reserva {
-  id: string;
-  area_nome: string | null;
-  data: string;
-  periodo: string | null;
-  valor: number;
-  status: string;
-}
-export interface CondominioCompleto {
-  id: string;
-  nome: string;
-  endereco: string | null;
-  unidades: number | null;
-  blocos: number | null;
-  codigo: string | null;
-  sindico_id: string | null;
-}
-
-export interface Solicitacao {
-  id: string;
-  titulo: string;
-  status: 'Pendente' | 'Em andamento' | 'Resolvida';
-  morador_nome: string | null;
-  apto: string | null;
-}
-
-export interface Aviso {
-  id: string;
-  titulo: string;
-  mensagem: string;
-  autor: string | null;
-  created_at: string;
-}
 
 export interface Profile {
   id: string;
@@ -91,15 +29,88 @@ export interface NovoUsuario {
   apto?: string;
 }
 
+export interface CondominioCompleto {
+  id: string;
+  nome: string;
+  endereco: string | null;
+  unidades: number | null;
+  blocos: number | null;
+  codigo: string | null;
+  sindico_id: string | null;
+}
+
+export interface Aviso {
+  id: string;
+  titulo: string;
+  mensagem: string;
+  autor: string | null;
+  created_at: string;
+}
+
+export interface HistoricoItem {
+  status: string;
+  data: string;
+  done: boolean;
+}
+
+export interface SolicitacaoDetalhe {
+  id: string;
+  morador_id: string;
+  morador_nome: string | null;
+  apto: string | null;
+  titulo: string;
+  categoria: string | null;
+  prioridade: 'Baixa' | 'Média' | 'Alta' | null;
+  status: 'Pendente' | 'Em andamento' | 'Resolvida';
+  localizacao: string | null;
+  descricao: string | null;
+  foto: boolean;
+  foto_path: string | null;
+  historico: HistoricoItem[];
+  created_at: string;
+}
+
+export type Solicitacao = Pick<
+  SolicitacaoDetalhe,
+  'id' | 'titulo' | 'status' | 'morador_nome' | 'apto'
+>;
+
+export interface Area {
+  id: string;
+  nome: string;
+  capacidade: string | null;
+  taxa: number;
+}
+
+export interface Reserva {
+  id: string;
+  area_nome: string | null;
+  data: string;
+  periodo: string | null;
+  valor: number;
+  status: string;
+}
+
+export interface ReservaSindico {
+  id: string;
+  area_nome: string | null;
+  morador_nome: string | null;
+  apto: string | null;
+  data: string;
+  periodo: string | null;
+  valor: number;
+  status: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class StoreService {
   readonly supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+  // ---------- Login e cadastro ----------
+
   async getCondominios(): Promise<Condominio[]> {
     const { data, error } = await this.supabase
-      .from('condominios')
-      .select('id, nome')
-      .order('nome');
+      .from('condominios').select('id, nome').order('nome');
     if (error) console.error(error);
     return data ?? [];
   }
@@ -132,10 +143,8 @@ export class StoreService {
   async signIn(cpf: string, tipo: string, senha: string): Promise<Profile | null> {
     const email = await this.findEmailByCpfTipo(cpf, tipo);
     if (!email) return null;
-
     const { error } = await this.supabase.auth.signInWithPassword({ email, password: senha });
     if (error) return null;
-
     return this.getCurrentProfile();
   }
 
@@ -143,12 +152,8 @@ export class StoreService {
     const { data: sessionData } = await this.supabase.auth.getSession();
     const userId = sessionData.session?.user.id;
     if (!userId) return null;
-
     const { data } = await this.supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+      .from('profiles').select('*').eq('id', userId).single();
     return (data as Profile) ?? null;
   }
 
@@ -156,15 +161,23 @@ export class StoreService {
     await this.supabase.auth.signOut();
   }
 
-    
   async requireProfile(tipo: Tipo): Promise<Profile | null> {
     const p = await this.getCurrentProfile();
     return p && p.tipo === tipo ? p : null;
   }
 
+  async requireSindico(): Promise<{ perfil: Profile; cond: CondominioCompleto | null } | null> {
+    const perfil = await this.requireProfile('sindico');
+    if (!perfil) return null;
+    return { perfil, cond: await this.getCondominioDoSindico(perfil.id) };
+  }
+
+  // ---------- Condomínio ----------
+
   async getCondominio(id: string | null): Promise<CondominioCompleto | null> {
     if (!id) return null;
-    const { data } = await this.supabase.from('condominios').select('*').eq('id', id).maybeSingle();
+    const { data } = await this.supabase
+      .from('condominios').select('*').eq('id', id).maybeSingle();
     return (data as CondominioCompleto) ?? null;
   }
 
@@ -192,29 +205,156 @@ export class StoreService {
     return this.supabase.from('condominios').update(c).eq('id', id);
   }
 
-  async getSolicitacoesByCondominio(condId: string): Promise<Solicitacao[]> {
-    const { data } = await this.supabase
-      .from('solicitacoes')
-      .select('id, titulo, status, morador_nome, apto')
-      .eq('condominio_id', condId)
-      .order('created_at', { ascending: false });
-    return (data as Solicitacao[]) ?? [];
-  }
-
-async getSolicitacoesByMorador(moradorId: string): Promise<SolicitacaoDetalhe[]> {
-  const { data } = await this.supabase
-    .from('solicitacoes')
-    .select('*')
-    .eq('morador_id', moradorId)
-    .order('created_at', { ascending: false });
-  return (data as SolicitacaoDetalhe[]) ?? [];
-}
-
   async countMoradores(condId: string): Promise<number> {
     const { count } = await this.supabase
       .from('profiles').select('id', { count: 'exact', head: true })
       .eq('condominio_id', condId).eq('tipo', 'condomino');
     return count ?? 0;
+  }
+
+  async getMoradores(condId: string): Promise<Profile[]> {
+    const { data } = await this.supabase
+      .from('profiles').select('*')
+      .eq('condominio_id', condId).eq('tipo', 'condomino')
+      .order('nome');
+    return (data as Profile[]) ?? [];
+  }
+
+  // ---------- Solicitações ----------
+
+  async getSolicitacoesDoCondominio(condId: string): Promise<SolicitacaoDetalhe[]> {
+    const { data } = await this.supabase
+      .from('solicitacoes').select('*')
+      .eq('condominio_id', condId)
+      .order('created_at', { ascending: false });
+    return (data as SolicitacaoDetalhe[]) ?? [];
+  }
+
+  async getSolicitacoesByCondominio(condId: string): Promise<SolicitacaoDetalhe[]> {
+    return this.getSolicitacoesDoCondominio(condId);
+  }
+
+  async getSolicitacoesDoMorador(moradorId: string): Promise<SolicitacaoDetalhe[]> {
+    const { data } = await this.supabase
+      .from('solicitacoes').select('*')
+      .eq('morador_id', moradorId)
+      .order('created_at', { ascending: false });
+    return (data as SolicitacaoDetalhe[]) ?? [];
+  }
+
+  async getSolicitacoesByMorador(moradorId: string): Promise<SolicitacaoDetalhe[]> {
+    return this.getSolicitacoesDoMorador(moradorId);
+  }
+
+  async getSolicitacao(id: string): Promise<SolicitacaoDetalhe | null> {
+    const { data } = await this.supabase
+      .from('solicitacoes').select('*').eq('id', id).maybeSingle();
+    return (data as SolicitacaoDetalhe) ?? null;
+  }
+
+  async criarSolicitacao(p: Profile, d: {
+    titulo: string; categoria: string; descricao: string; localizacao: string;
+    prioridade: string; fotoPath: string | null; dataLabel: string;
+  }) {
+    return this.supabase.from('solicitacoes').insert({
+      condominio_id: p.condominio_id,
+      morador_id: p.id,
+      morador_nome: p.nome,
+      apto: p.apto,
+      titulo: d.titulo,
+      categoria: d.categoria,
+      descricao: d.descricao,
+      localizacao: d.localizacao,
+      prioridade: d.prioridade,
+      foto: !!d.fotoPath,
+      foto_path: d.fotoPath,
+      status: 'Pendente',
+      historico: [{ status: 'Solicitação registrada', data: d.dataLabel, done: true }],
+    });
+  }
+
+  async atualizarStatusSolicitacao(s: SolicitacaoDetalhe, novo: 'Em andamento' | 'Resolvida') {
+    const texto = novo === 'Em andamento' ? 'Solicitação validada pela adm' : 'Serviço concluído';
+    const now = new Date();
+    const dataLabel =
+      now.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '') +
+      ' · ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    return this.supabase
+      .from('solicitacoes')
+      .update({
+        status: novo,
+        historico: [...(s.historico ?? []), { status: texto, data: dataLabel, done: true }],
+      })
+      .eq('id', s.id)
+      .select('id');
+  }
+
+  // ---------- Fotos ----------
+
+  async uploadFotoSolicitacao(p: Profile, file: File): Promise<string | null> {
+    const ext = (file.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const path = `${p.condominio_id}/${p.id}/${Date.now()}.${ext || 'jpg'}`;
+    const { error } = await this.supabase.storage
+      .from('solicitacoes')
+      .upload(path, file, { contentType: file.type });
+    if (error) { console.error(error); return null; }
+    return path;
+  }
+
+  async getFotoUrl(path: string | null): Promise<string | null> {
+    if (!path) return null;
+    const { data, error } = await this.supabase.storage
+      .from('solicitacoes')
+      .createSignedUrl(path, 3600);
+    if (error) {
+      console.error('Erro ao gerar URL da foto:', error.message);
+      return null;
+    }
+    return data?.signedUrl ?? null;
+  }
+
+  // ---------- Áreas e reservas ----------
+
+  async getAreas(condId: string | null): Promise<Area[]> {
+    if (!condId) return [];
+    const { data } = await this.supabase
+      .from('areas').select('id, nome, capacidade, taxa')
+      .eq('condominio_id', condId).order('nome');
+    return (data as Area[]) ?? [];
+  }
+
+  async getReservasDoMorador(moradorId: string): Promise<Reserva[]> {
+    const { data } = await this.supabase
+      .from('reservas').select('id, area_nome, data, periodo, valor, status')
+      .eq('morador_id', moradorId)
+      .order('data', { ascending: false });
+    return (data as Reserva[]) ?? [];
+  }
+
+  async criarReserva(p: Profile, area: Area, d: { data: string; horario: string; periodo: string }) {
+    return this.supabase.from('reservas').insert({
+      condominio_id: p.condominio_id,
+      morador_id: p.id,
+      morador_nome: p.nome,
+      apto: p.apto,
+      area_id: area.id,
+      area_nome: area.nome,
+      data: d.data,
+      horario: d.horario,
+      periodo: d.periodo,
+      valor: area.taxa,
+      status: 'Confirmada',
+    });
+  }
+
+  async getReservasDoCondominio(condId: string): Promise<ReservaSindico[]> {
+    const { data } = await this.supabase
+      .from('reservas')
+      .select('id, area_nome, morador_nome, apto, data, periodo, valor, status')
+      .eq('condominio_id', condId)
+      .order('data', { ascending: false });
+    return (data as ReservaSindico[]) ?? [];
   }
 
   async countReservas(condId: string): Promise<number> {
@@ -223,6 +363,8 @@ async getSolicitacoesByMorador(moradorId: string): Promise<SolicitacaoDetalhe[]>
       .eq('condominio_id', condId);
     return count ?? 0;
   }
+
+  // ---------- Avisos ----------
 
   async getAvisos(condId: string | null): Promise<Aviso[]> {
     if (!condId) return [];
@@ -233,75 +375,9 @@ async getSolicitacoesByMorador(moradorId: string): Promise<SolicitacaoDetalhe[]>
     return (data as Aviso[]) ?? [];
   }
 
-  async getAreas(condominioId: string | null): Promise<Area[]> {
-  if (!condominioId) return [];
-  const { data, error } = await this.supabase
-    .from('areas')
-    .select('id, nome, capacidade, taxa')
-    .eq('condominio_id', condominioId)
-    .order('nome');
-  if (error) console.error(error);
-  return (data as Area[]) ?? [];
-}
-
-async getSolicitacao(id: string): Promise<SolicitacaoDetalhe | null> {
-  const { data, error } = await this.supabase
-    .from('solicitacoes')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
-  if (error) console.error(error);
-  return (data as SolicitacaoDetalhe) ?? null;
-}
-
-async getReservasDoMorador(moradorId: string): Promise<Reserva[]> {
-  const { data, error } = await this.supabase
-    .from('reservas')
-    .select('id, area_nome, data, periodo, valor, status')
-    .eq('morador_id', moradorId)
-    .order('data', { ascending: false });
-  if (error) console.error(error);
-  return (data as Reserva[]) ?? [];
-}
-
-async criarReserva(
-  perfil: Profile,
-  area: Area,
-  r: { data: string; horario: string; periodo: string },
-) {
-  return this.supabase.from('reservas').insert({
-    condominio_id: perfil.condominio_id,
-    morador_id: perfil.id,
-    area_id: area.id,
-    area_nome: area.nome,
-    data: r.data,
-    horario: r.horario,
-    periodo: r.periodo,
-    valor: area.taxa,
-    status: 'Confirmada',
-  });
-}
-
-async criarSolicitacao(
-  perfil: Profile,
-  s: {
-    titulo: string; categoria: string; descricao: string; localizacao: string;
-    prioridade: string; foto: boolean; dataLabel: string;
-  },
-) {
-  return this.supabase.from('solicitacoes').insert({
-    condominio_id: perfil.condominio_id,
-    morador_id: perfil.id,
-    morador_nome: perfil.nome,
-    apto: perfil.apto,
-    titulo: s.titulo,
-    categoria: s.categoria,
-    descricao: s.descricao,
-    localizacao: s.localizacao,
-    prioridade: s.prioridade,
-    foto: s.foto,
-    status: 'Pendente',
-    historico: [{ status: 'Solicitação registrada', data: s.dataLabel, done: true }],
-  });
-}
+  async criarAviso(condId: string, titulo: string, mensagem: string, autor: string) {
+    return this.supabase.from('avisos').insert({
+      condominio_id: condId, titulo, mensagem, autor,
+    });
+  }
 }

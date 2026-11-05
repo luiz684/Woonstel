@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CondominioCompleto, Profile, Solicitacao, StoreService } from '../../services/store';
 import { initials, primeiroNome } from '../../utils/format';
+import { BottomNavSindico } from '../../components/bottom-nav-sindico/bottom-nav-sindico';
 
 @Component({
   selector: 'app-sindico-inicio',

@@ -16,9 +16,10 @@ export class MoradorSolicitarManutencao implements OnInit {
   private toast = inject(ToastService);
 
   private perfil: Profile | null = null;
+  private arquivo: File | null = null;
+
   salvando = signal(false);
   nomeFoto = signal('');
-  private temFoto = false;
 
   prioridades = ['Baixa', 'Média', 'Alta'];
   prioridade = signal('Média');
@@ -34,9 +35,16 @@ export class MoradorSolicitarManutencao implements OnInit {
   }
 
   onFoto(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    this.temFoto = !!file;
-    if (file) this.nomeFoto.set(file.name);
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      this.toast.show('A foto deve ter no máximo 5 MB.');
+      input.value = '';
+      return;
+    }
+    this.arquivo = file;
+    this.nomeFoto.set(file.name);
   }
 
   async registrar() {
@@ -56,13 +64,24 @@ export class MoradorSolicitarManutencao implements OnInit {
       ' · ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
     this.salvando.set(true);
+
+    let fotoPath: string | null = null;
+    if (this.arquivo) {
+      fotoPath = await this.store.uploadFotoSolicitacao(this.perfil, this.arquivo);
+      if (!fotoPath) {
+        this.salvando.set(false);
+        this.toast.show('Não foi possível enviar a foto. Tente outra imagem.');
+        return;
+      }
+    }
+
     const { error } = await this.store.criarSolicitacao(this.perfil, {
       titulo: this.titulo.trim(),
       categoria: this.categoria,
       descricao: this.descricao.trim(),
       localizacao: this.local.trim(),
       prioridade: this.prioridade(),
-      foto: this.temFoto,
+      fotoPath,
       dataLabel,
     });
     this.salvando.set(false);
