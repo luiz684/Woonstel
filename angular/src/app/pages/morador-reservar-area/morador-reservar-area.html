@@ -6,8 +6,24 @@
     <h1>Reservar Área</h1>
   </div>
 
-  @if (areas().length === 0) {
-    <div class="role-note">O síndico ainda não cadastrou áreas comuns para o seu condomínio.</div>
+    @if (indisponiveis().length > 0) {
+    <div class="banner banner-amber">
+      <div class="banner-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/></svg>
+      </div>
+      <div>
+      
+        <strong>Indisponível no momento</strong>
+        @for (a of indisponiveis(); track a.id) {
+          <span>{{ a.nome }}: {{ a.motivo_indisponibilidade || 'sem previsão de retorno' }}</span>
+        }
+      </div>
+    </div>
+    
+  }
+
+    @if (areas().length === 0) {
+    <div class="role-note">Nenhuma área disponível para reserva no momento.</div>
   } @else {
     @if (area; as a) {
       <div class="area-card">

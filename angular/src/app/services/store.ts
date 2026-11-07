@@ -12,6 +12,7 @@ export interface Profile {
   tipo: Tipo;
   condominio_id: string | null;
   apto: string | null;
+  avisos_lidos_ate: string | null;
 }
 
 export interface Condominio {
@@ -80,6 +81,8 @@ export interface Area {
   nome: string;
   capacidade: string | null;
   taxa: number;
+  disponivel: boolean;
+  motivo_indisponibilidade: string | null;
 }
 
 export interface Reserva {
@@ -106,7 +109,6 @@ export interface ReservaSindico {
 export class StoreService {
   readonly supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // ---------- Login e cadastro ----------
 
   async getCondominios(): Promise<Condominio[]> {
     const { data, error } = await this.supabase
@@ -172,7 +174,7 @@ export class StoreService {
     return { perfil, cond: await this.getCondominioDoSindico(perfil.id) };
   }
 
-  // ---------- Condomínio ----------
+
 
   async getCondominio(id: string | null): Promise<CondominioCompleto | null> {
     if (!id) return null;
@@ -220,7 +222,6 @@ export class StoreService {
     return (data as Profile[]) ?? [];
   }
 
-  // ---------- Solicitações ----------
 
   async getSolicitacoesDoCondominio(condId: string): Promise<SolicitacaoDetalhe[]> {
     const { data } = await this.supabase
@@ -290,7 +291,6 @@ export class StoreService {
       .select('id');
   }
 
-  // ---------- Fotos ----------
 
   async uploadFotoSolicitacao(p: Profile, file: File): Promise<string | null> {
     const ext = (file.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -314,14 +314,27 @@ export class StoreService {
     return data?.signedUrl ?? null;
   }
 
-  // ---------- Áreas e reservas ----------
 
-  async getAreas(condId: string | null): Promise<Area[]> {
+    async getAreas(condId: string | null): Promise<Area[]> {
     if (!condId) return [];
     const { data } = await this.supabase
-      .from('areas').select('id, nome, capacidade, taxa')
+      .from('areas')
+      .select('id, nome, capacidade, taxa, disponivel, motivo_indisponibilidade')
       .eq('condominio_id', condId).order('nome');
     return (data as Area[]) ?? [];
+  }
+
+    async criarArea(condId: string, a: { nome: string; capacidade: string; taxa: number }) {
+    return this.supabase.from('areas').insert({
+      condominio_id: condId,
+      nome: a.nome,
+      capacidade: a.capacidade,
+      taxa: a.taxa,
+    });
+  }
+
+  async excluirArea(id: string) {
+    return this.supabase.from('areas').delete().eq('id', id);
   }
 
   async getReservasDoMorador(moradorId: string): Promise<Reserva[]> {
@@ -364,8 +377,6 @@ export class StoreService {
     return count ?? 0;
   }
 
-  // ---------- Avisos ----------
-
   async getAvisos(condId: string | null): Promise<Aviso[]> {
     if (!condId) return [];
     const { data } = await this.supabase
@@ -379,5 +390,29 @@ export class StoreService {
     return this.supabase.from('avisos').insert({
       condominio_id: condId, titulo, mensagem, autor,
     });
+
+  }
+    async atualizarArea(id: string, a: { nome: string; capacidade: string; taxa: number }) {
+    return this.supabase.from('areas').update(a).eq('id', id).select('id');
+  }
+
+  async definirDisponibilidade(id: string, disponivel: boolean, motivo: string | null) {
+    return this.supabase.from('areas')
+      .update({ disponivel, motivo_indisponibilidade: disponivel ? null : motivo })
+      .eq('id', id).select('id');
+  }
+
+  async atualizarAviso(id: string, titulo: string, mensagem: string) {
+    return this.supabase.from('avisos').update({ titulo, mensagem }).eq('id', id).select('id');
+  }
+
+  async excluirAviso(id: string) {
+    return this.supabase.from('avisos').delete().eq('id', id).select('id');
+  }
+
+  async marcarAvisosLidos(moradorId: string) {
+    return this.supabase.from('profiles')
+      .update({ avisos_lidos_ate: new Date().toISOString() })
+      .eq('id', moradorId);
   }
 }

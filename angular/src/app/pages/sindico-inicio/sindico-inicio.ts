@@ -1,12 +1,12 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { CondominioCompleto, Profile, Solicitacao, StoreService } from '../../services/store';
-import { initials, primeiroNome } from '../../utils/format';
+import { CondominioCompleto, Profile, SolicitacaoDetalhe, StoreService } from '../../services/store';
+import { BADGE_PRIO, BADGE_STATUS, initials, primeiroNome } from '../../utils/format';
 import { BottomNavSindico } from '../../components/bottom-nav-sindico/bottom-nav-sindico';
 
 @Component({
   selector: 'app-sindico-inicio',
-  imports: [RouterLink],
+  imports: [RouterLink, BottomNavSindico],
   templateUrl: './sindico-inicio.html',
   styleUrl: './sindico-inicio.css',
 })
@@ -17,46 +17,33 @@ export class SindicoInicio implements OnInit {
   perfil = signal<Profile | null>(null);
   cond = signal<CondominioCompleto | null>(null);
   carregado = signal(false);
-
   pendentes = signal(0);
-  moradores = signal(0);
-  reservas = signal(0); 
-  resolvidas = signal(0);
-  recentes = signal<Solicitacao[]>([]);
+  atencao = signal<SolicitacaoDetalhe[]>([]);
 
   iniciais = initials;
   primeiroNome = primeiroNome;
-  badgeMap: Record<string, string> = {
-    'Pendente': 'badge-amber',
-    'Em andamento': 'badge-blue',
-    'Resolvida': 'badge-green',
-  };
+  badge = BADGE_STATUS;
+  prio = BADGE_PRIO;
 
   async ngOnInit() {
-    
-    const p = await this.store.requireProfile('sindico');
-    if (!p) { this.router.navigate(['/']); return; }
-    this.perfil.set(p);
+    const ctx = await this.store.requireSindico();
+    if (!ctx) { this.router.navigate(['/']); return; }
+    this.perfil.set(ctx.perfil);
+    this.cond.set(ctx.cond);
 
-    const cond = await this.store.getCondominioDoSindico(p.id);
-    this.cond.set(cond);
-
-    if (cond) {
-      const [sols, moradores, reservas] = await Promise.all([
-        this.store.getSolicitacoesByCondominio(cond.id),
-        this.store.countMoradores(cond.id),
-        this.store.countReservas(cond.id),
-      ]);
+    if (ctx.cond) {
+      const sols = await this.store.getSolicitacoesDoCondominio(ctx.cond.id);
       this.pendentes.set(sols.filter(s => s.status === 'Pendente').length);
-      this.resolvidas.set(sols.filter(s => s.status === 'Resolvida').length);
-      this.moradores.set(moradores);
-      this.reservas.set(reservas);
-      this.recentes.set(sols.slice(0, 3));
+
+    
+      const peso: Record<string, number> = { Alta: 0, 'Média': 1, Baixa: 2 };
+      const abertas = sols
+        .filter(s => s.status !== 'Resolvida')
+        .sort((a, b) =>
+          (peso[a.prioridade ?? ''] ?? 3) - (peso[b.prioridade ?? ''] ?? 3) ||
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      this.atencao.set(abertas.slice(0, 3));
     }
     this.carregado.set(true);
-  }
-    async sair() {
-    await this.store.signOut();
-    this.router.navigate(['/']);
   }
 }

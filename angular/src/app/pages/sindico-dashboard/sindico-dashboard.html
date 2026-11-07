@@ -1,0 +1,53 @@
+<div class="screen">
+  <div class="topbar">
+    <a class="back-btn" routerLink="/sindico/inicio">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Dashboard</h1>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card accent"><div class="num">{{ pendentes() }}</div><div class="lbl">Solicitações pendentes</div></div>
+    <div class="stat-card"><div class="num">{{ moradores() }}</div><div class="lbl">Moradores cadastrados</div></div>
+    <div class="stat-card"><div class="num">{{ reservasMes() }}</div><div class="lbl">Reservas este mês</div></div>
+    <div class="stat-card"><div class="num">{{ resolvidas() }}</div><div class="lbl">Resolvidas no total</div></div>
+  </div>
+
+  <div class="section-title">Solicitações por status</div>
+  <div class="detail-card">
+    @for (b of porStatus(); track b.rotulo) {
+      <div class="bar-row">
+        <span class="bar-label">{{ b.rotulo }}</span>
+        <div class="bar-track"><div class="bar-fill" [style.width.%]="b.pct"></div></div>
+        <span class="bar-val">{{ b.valor }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="section-title">Solicitações por categoria</div>
+  <div class="detail-card">
+    @for (b of porCategoria(); track b.rotulo) {
+      <div class="bar-row">
+        <span class="bar-label">{{ b.rotulo }}</span>
+        <div class="bar-track"><div class="bar-fill" [style.width.%]="b.pct"></div></div>
+        <span class="bar-val">{{ b.valor }}</span>
+      </div>
+    } @empty {
+      <p class="meta">Sem dados ainda.</p>
+    }
+  </div>
+
+  <div class="section-title">Reservas por área</div>
+  <div class="detail-card">
+    @for (b of porArea(); track b.rotulo) {
+      <div class="bar-row">
+        <span class="bar-label">{{ b.rotulo }}</span>
+        <div class="bar-track"><div class="bar-fill" [style.width.%]="b.pct"></div></div>
+        <span class="bar-val">{{ b.valor }}</span>
+      </div>
+    } @empty {
+      <p class="meta">Sem dados ainda.</p>
+    }
+  </div>
+</div>
+<app-bottom-nav-sindico active="dashboard"/>

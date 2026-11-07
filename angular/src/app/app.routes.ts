@@ -15,9 +15,14 @@ import { SindicoCadastrarCondominio } from './pages/sindico-cadastrar-condominio
 import { SindicoSolicitacoes } from './pages/sindico-solicitacoes/sindico-solicitacoes';
 import { SindicoSolicitacaoDetalhe } from './pages/sindico-solicitacao-detalhe/sindico-solicitacao-detalhe';
 import { SindicoMoradores } from './pages/sindico-moradores/sindico-moradores';
-import { SindicoReservar } from './pages/sindico-reservar/sindico-reservar';
+import { SindicoReservas } from './pages/sindico-reservas/sindico-reservas';
 import { SindicoAvisos } from './pages/sindico-avisos/sindico-avisos';
 import { SindicoPerfil } from './pages/sindico-perfil/sindico-perfil';
+import { SindicoAreas } from './pages/sindico-areas/sindico-areas';
+import { SindicoDashboard } from './pages/sindico-dashboard/sindico-dashboard';
+import { MoradorAvisos } from './pages/morador-avisos/morador-avisos';
+
+
 
 export const routes: Routes = [
   { path: '', component: Login },
@@ -37,16 +42,18 @@ export const routes: Routes = [
   { path: 'sindico/solicitacoes', component: SindicoSolicitacoes },
   { path: 'sindico/solicitacao/:id', component: SindicoSolicitacaoDetalhe },
   { path: 'sindico/moradores', component: SindicoMoradores },
-  { path: 'sindico/reservar', component: SindicoReservar },
+  { path: 'sindico/reservas', component: SindicoReservas },
   { path: 'sindico/avisos', component: SindicoAvisos },
   { path: 'sindico/perfil', component: SindicoPerfil },
 
   { path: 'sindico/solicitacoes', component: SindicoSolicitacoes },
   { path: 'sindico/solicitacao/:id', component: SindicoSolicitacaoDetalhe },
   { path: 'sindico/moradores', component: SindicoMoradores },
-  { path: 'sindico/reservar', component: SindicoReservar },
   { path: 'sindico/avisos', component: SindicoAvisos },
   { path: 'sindico/perfil', component: SindicoPerfil },
+  { path: 'sindico/areas', component: SindicoAreas },
+  { path: 'sindico/dashboard', component: SindicoDashboard },
+  { path: 'morador/avisos', component: MoradorAvisos },
 
   { path: '**', redirectTo: '' },
 ];

@@ -1,0 +1,28 @@
+<div class="screen">
+  <div class="topbar">
+    <a class="back-btn" routerLink="/sindico/inicio">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Reservas de área</h1>
+  </div>
+
+  <div class="list">
+    @for (r of reservas(); track r.id) {
+      <div class="req-card">
+        <div class="badge-row"><span class="badge badge-green">{{ r.status }}</span></div>
+        <h3>{{ r.area_nome }}</h3>
+        <p class="meta">{{ data(r.data) }} · {{ r.periodo }}</p>
+        <p class="meta" style="margin-top:4px;">{{ r.morador_nome }} · Apto {{ r.apto }}</p>
+        <p class="meta" style="margin-top:4px;"><strong>{{ r.valor > 0 ? brl(r.valor) : 'Sem taxa' }}</strong></p>
+      </div>
+    } @empty {
+      @if (carregado()) {
+        <div class="empty-state">
+          <h3>Nenhuma reserva ainda</h3>
+          <p>As reservas feitas pelos moradores aparecem aqui.</p>
+        </div>
+      }
+    }
+  </div>
+</div>
+<app-bottom-nav-sindico active="inicio" />

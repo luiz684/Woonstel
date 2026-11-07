@@ -19,6 +19,7 @@ export class MoradorInicio implements OnInit {
   cond = signal<CondominioCompleto | null>(null);
   pendentes = signal(0);
   avisos = signal<Aviso[]>([]);
+  naoLidos = signal(0);
 
   iniciais = initials;
   primeiroNome = primeiroNome;
@@ -37,6 +38,8 @@ export class MoradorInicio implements OnInit {
     this.cond.set(cond);
     this.pendentes.set(sols.filter(s => s.status !== 'Resolvida').length);
     this.avisos.set(avisos);
+    const lido = p.avisos_lidos_ate ? new Date(p.avisos_lidos_ate).getTime() : 0;
+    this.naoLidos.set(avisos.filter(a => new Date(a.created_at).getTime() > lido).length);
   }
 
     async sair() {

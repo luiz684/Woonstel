@@ -15,6 +15,8 @@ export class MoradorSolicitacaoDetalhe implements OnInit {
   private route = inject(ActivatedRoute);
 
   s = signal<SolicitacaoDetalhe | null>(null);
+  fotoUrl = signal<string | null>(null);
+  fotoErro = signal(false);
   carregado = signal(false);
   badge = BADGE_STATUS;
   prio = BADGE_PRIO;
@@ -25,8 +27,14 @@ export class MoradorSolicitacaoDetalhe implements OnInit {
     if (!p) { this.router.navigate(['/']); return; }
 
     const id = this.route.snapshot.paramMap.get('id') ?? '';
-    const s = await this.store.getSolicitacao(id);
-    this.s.set(s && s.morador_id === p.id ? s : null);
+    const sol = await this.store.getSolicitacao(id);
+    this.s.set(sol && sol.morador_id === p.id ? sol : null);
+
+    if (sol?.foto_path) {
+      const url = await this.store.getFotoUrl(sol.foto_path);
+      this.fotoUrl.set(url);
+      this.fotoErro.set(!url);
+    }
     this.carregado.set(true);
   }
 }

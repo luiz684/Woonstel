@@ -7,38 +7,42 @@
   </div>
 
   @if (carregado()) {
-    @if (s(); as s) {
+    @if (s(); as sol) {
       <div class="detail-card">
         <div class="badge-row">
-          <span class="badge badge-gray">{{ s.categoria?.toUpperCase() }}</span>
-          @if (s.prioridade) {
-            <span class="badge" [class]="prio[s.prioridade]">{{ s.prioridade }} PRIORIDADE</span>
+          <span class="badge badge-gray">{{ sol.categoria?.toUpperCase() }}</span>
+          @if (sol.prioridade) {
+            <span class="badge" [class]="prio[sol.prioridade]">{{ sol.prioridade }} PRIORIDADE</span>
           }
-          <span class="badge" [class]="badge[s.status]">{{ s.status }}</span>
+          <span class="badge" [class]="badge[sol.status]">{{ sol.status }}</span>
         </div>
-        <div class="detail-title">{{ s.titulo }}</div>
-        <div class="kv-row"><span class="k">Localização</span><span class="v">{{ s.localizacao }}</span></div>
-        <div class="kv-row"><span class="k">Data de Abertura</span><span class="v">{{ data(s.created_at) }}</span></div>
+        <div class="detail-title">{{ sol.titulo }}</div>
+        <div class="kv-row"><span class="k">Localização</span><span class="v">{{ sol.localizacao }}</span></div>
+        <div class="kv-row"><span class="k">Data de Abertura</span><span class="v">{{ data(sol.created_at) }}</span></div>
       </div>
 
       <div class="detail-card">
         <div class="section-title" style="margin-bottom:10px;">Descrição</div>
-        <p class="desc-text">{{ s.descricao }}</p>
+        <p class="desc-text">{{ sol.descricao }}</p>
       </div>
 
-      @if (s.foto) {
+      @if (sol.foto_path) {
         <div class="detail-card">
           <div class="section-title" style="margin-bottom:10px;">Foto Anexada</div>
-          <div class="photo-box" style="display:flex;align-items:center;justify-content:center;color:var(--text-faint);">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/></svg>
-          </div>
+          @if (fotoUrl(); as url) {
+            <img [src]="url" alt="Foto da solicitação" style="width:100%;border-radius:12px;display:block;">
+          } @else if (fotoErro()) {
+            <p class="meta">Não foi possível carregar a foto.</p>
+          } @else {
+            <p class="meta">Carregando foto...</p>
+          }
         </div>
       }
 
       <div class="detail-card">
         <div class="section-title" style="margin-bottom:14px;">Histórico de Atualizações</div>
         <div class="timeline">
-          @for (h of s.historico; track $index) {
+          @for (h of sol.historico; track $index) {
             <div class="tl-item" [class.pending]="!h.done">
               <div class="tl-dot">
                 @if (h.done) {

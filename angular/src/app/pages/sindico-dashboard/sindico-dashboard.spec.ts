@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SindicoReservar } from './sindico-reservar';
+import { SindicoDashboard } from './sindico-dashboard';
 
-describe('SindicoReservar', () => {
-  let component: SindicoReservar;
-  let fixture: ComponentFixture<SindicoReservar>;
+describe('SindicoDashboard', () => {
+  let component: SindicoDashboard;
+  let fixture: ComponentFixture<SindicoDashboard>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SindicoReservar],
+      imports: [SindicoDashboard],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SindicoReservar);
+    fixture = TestBed.createComponent(SindicoDashboard);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

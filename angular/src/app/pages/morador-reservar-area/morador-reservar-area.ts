@@ -19,6 +19,7 @@ export class MoradorReservarArea implements OnInit {
   private perfil: Profile | null = null;
   areas = signal<Area[]>([]);
   salvando = signal(false);
+  indisponiveis = signal<Area[]>([]);
   brl = brl;
 
   areaId = '';
@@ -32,12 +33,13 @@ export class MoradorReservarArea implements OnInit {
     return this.areas().find(a => a.id === this.areaId);
   }
 
-  async ngOnInit() {
+    async ngOnInit() {
     this.perfil = await this.store.requireProfile('condomino');
     if (!this.perfil) { this.router.navigate(['/']); return; }
     const lista = await this.store.getAreas(this.perfil.condominio_id);
-    this.areas.set(lista);
-    this.areaId = lista[0]?.id ?? '';
+    this.areas.set(lista.filter(a => a.disponivel));
+    this.indisponiveis.set(lista.filter(a => !a.disponivel));
+    this.areaId = this.areas()[0]?.id ?? '';
   }
 
   async reservar() {

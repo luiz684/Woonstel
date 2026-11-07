@@ -8,5 +8,5 @@ import { RouterLink } from '@angular/router';
   styleUrl: './bottom-nav-sindico.css',
 })
 export class BottomNavSindico {
-  active = input.required<'inicio' | 'solicitacoes' | 'reservas' | 'perfil'>();
+  active = input.required<'inicio' | 'solicitacoes' | 'dashboard' | 'perfil'| 'reservas'>();
 }

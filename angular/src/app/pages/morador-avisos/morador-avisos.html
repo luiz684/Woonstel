@@ -1,0 +1,24 @@
+<div class="screen">
+  <div class="topbar">
+    <a class="back-btn" routerLink="/morador/inicio">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Avisos</h1>
+  </div>
+
+  <div class="list">
+    @for (a of avisos(); track a.id) {
+      <div class="req-card">
+        @if (novo(a)) {
+          <div class="badge-row"><span class="badge badge-blue">NOVO</span></div>
+        }
+        <h3>{{ a.titulo }}</h3>
+        <p class="meta" style="margin-bottom:6px;">{{ a.mensagem }}</p>
+        <p class="meta">{{ data(a.created_at) }} · {{ a.autor }}</p>
+      </div>
+    } @empty {
+      <div class="empty-state"><h3>Nenhum aviso por enquanto</h3></div>
+    }
+  </div>
+</div>
+<app-bottom-nav-morador active="inicio" />

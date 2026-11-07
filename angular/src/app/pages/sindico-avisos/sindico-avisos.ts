@@ -4,10 +4,11 @@ import { Router, RouterLink } from '@angular/router';
 import { Aviso, CondominioCompleto, Profile, StoreService } from '../../services/store';
 import { ToastService } from '../../services/toast';
 import { formatDateBR } from '../../utils/format';
+import { BottomNavSindico } from '../../components/bottom-nav-sindico/bottom-nav-sindico';
 
 @Component({
   selector: 'app-sindico-avisos',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, BottomNavSindico],
   templateUrl: './sindico-avisos.html',
   styleUrl: './sindico-avisos.css',
 })
@@ -20,7 +21,8 @@ export class SindicoAvisos implements OnInit {
   private cond: CondominioCompleto | null = null;
 
   avisos = signal<Aviso[]>([]);
-  mostrandoForm = signal(false);
+  modo = signal<'lista' | 'form'>('lista');
+  editandoId = signal<string | null>(null);
   salvando = signal(false);
   data = formatDateBR;
 
@@ -40,22 +42,62 @@ export class SindicoAvisos implements OnInit {
     if (this.cond) this.avisos.set(await this.store.getAvisos(this.cond.id));
   }
 
-  async publicar() {
+  novo() {
+    this.editandoId.set(null);
+    this.titulo = '';
+    this.mensagem = '';
+    this.modo.set('form');
+  }
+
+  editar(a: Aviso) {
+    this.editandoId.set(a.id);
+    this.titulo = a.titulo;
+    this.mensagem = a.mensagem;
+    this.modo.set('form');
+  }
+
+  cancelar() {
+    this.modo.set('lista');
+  }
+
+  async salvar() {
     if (!this.perfil || !this.cond) return;
     if (!this.titulo.trim() || !this.mensagem.trim()) {
       this.toast.show('Preencha o título e a mensagem.');
       return;
     }
+
     this.salvando.set(true);
-    const { error } = await this.store.criarAviso(
-      this.cond.id, this.titulo.trim(), this.mensagem.trim(), this.perfil.nome);
+    const id = this.editandoId();
+    let ok = false;
+    let msg = '';
+
+    if (id) {
+      const { data, error } = await this.store.atualizarAviso(id, this.titulo.trim(), this.mensagem.trim());
+      ok = !error && !!data && data.length > 0;
+      msg = error?.message ?? 'Sem permissão para alterar este aviso.';
+    } else {
+      const { error } = await this.store.criarAviso(
+        this.cond.id, this.titulo.trim(), this.mensagem.trim(), this.perfil.nome);
+      ok = !error;
+      msg = error?.message ?? '';
+    }
     this.salvando.set(false);
 
-    if (error) { this.toast.show('Erro ao publicar: ' + error.message); return; }
-    this.toast.show('Aviso publicado!');
-    this.titulo = '';
-    this.mensagem = '';
-    this.mostrandoForm.set(false);
+    if (!ok) { this.toast.show('Erro ao salvar: ' + msg); return; }
+    this.toast.show(id ? 'Aviso atualizado!' : 'Aviso publicado!');
+    this.modo.set('lista');
+    await this.carregar();
+  }
+
+  async excluir(a: Aviso) {
+    if (!confirm(`Excluir o aviso "${a.titulo}"?`)) return;
+    const { data, error } = await this.store.excluirAviso(a.id);
+    if (error || !data || data.length === 0) {
+      this.toast.show('Não foi possível excluir o aviso.');
+      return;
+    }
+    this.toast.show('Aviso excluído.');
     await this.carregar();
   }
 }

@@ -1,0 +1,63 @@
+<div class="screen">
+  <div class="topbar">
+    <a class="back-btn" routerLink="/sindico/inicio">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Áreas comuns</h1>
+  </div>
+
+  <form (ngSubmit)="salvar()" style="margin-bottom:24px;">
+    <div class="section-title">{{ editandoId() ? 'Editar área' : 'Nova área' }}</div>
+    <div class="field">
+      <label for="nome">Nome da área</label>
+      <div class="input-wrap">
+        <input type="text" id="nome" name="nome" [(ngModel)]="nome" placeholder="Ex: Salão de Festas">
+      </div>
+    </div>
+    <div class="field">
+      <label for="capacidade">Capacidade</label>
+      <div class="input-wrap">
+        <input type="text" id="capacidade" name="capacidade" [(ngModel)]="capacidade" placeholder="Ex: Até 50 pessoas">
+      </div>
+    </div>
+    <div class="field">
+      <label for="taxa">Taxa de uso (R$)</label>
+      <div class="input-wrap">
+        <input type="number" id="taxa" name="taxa" [(ngModel)]="taxa" min="0" step="0.01" placeholder="0 = sem taxa">
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary" [disabled]="salvando()">
+      {{ editandoId() ? 'Salvar alterações' : 'Adicionar área' }}
+    </button>
+    @if (editandoId()) {
+      <button type="button" class="btn btn-ghost" style="margin-top:10px;" (click)="cancelarEdicao()">Cancelar edição</button>
+    }
+  </form>
+
+  <div class="list">
+    @for (a of areas(); track a.id) {
+      <div class="req-card">
+        <div class="badge-row">
+          <span class="badge" [class]="a.disponivel ? 'badge-green' : 'badge-red'">
+            {{ a.disponivel ? 'Disponível' : 'Indisponível' }}
+          </span>
+        </div>
+        <h3>{{ a.nome }}</h3>
+        <p class="meta">{{ a.capacidade }} · {{ a.taxa > 0 ? brl(a.taxa) : 'Sem taxa' }}</p>
+        @if (!a.disponivel && a.motivo_indisponibilidade) {
+          <p class="meta" style="margin-top:4px;">Motivo: {{ a.motivo_indisponibilidade }}</p>
+        }
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="editar(a)">Editar</button>
+          <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="alternarDisponibilidade(a)">
+            {{ a.disponivel ? 'Indisponibilizar' : 'Disponibilizar' }}
+          </button>
+          <button class="btn btn-danger-ghost btn-sm" type="button" style="width:auto;" (click)="remover(a)">Remover</button>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state"><h3>Nenhuma área cadastrada</h3></div>
+    }
+  </div>
+</div>
+<app-bottom-nav-sindico active="inicio" />
