@@ -22,11 +22,15 @@ export class SindicoAreas implements OnInit {
   areas = signal<Area[]>([]);
   salvando = signal(false);
   editandoId = signal<string | null>(null);
+  motivoAbertoId = signal<string | null>(null); 
+  removendoId = signal<string | null>(null);    
   brl = brl;
 
   nome = '';
   capacidade = '';
   taxa: number | null = 0;
+  motivo = '';
+  duracao: null | undefined;
 
   async ngOnInit() {
     const ctx = await this.store.requireSindico();
@@ -44,9 +48,13 @@ export class SindicoAreas implements OnInit {
     this.nome = '';
     this.capacidade = '';
     this.taxa = 0;
+    this.duracao = null;
   }
 
+
   editar(a: Area) {
+    this.motivoAbertoId.set(null);
+    this.removendoId.set(null);
     this.editandoId.set(a.id);
     this.nome = a.nome;
     this.capacidade = a.capacidade ?? '';
@@ -69,6 +77,7 @@ export class SindicoAreas implements OnInit {
       nome: this.nome.trim(),
       capacidade: this.capacidade.trim(),
       taxa: Number(this.taxa ?? 0),
+      duracao_min: this.duracao ? Number(this.duracao) : null,
     };
 
     this.salvando.set(true);
@@ -93,26 +102,55 @@ export class SindicoAreas implements OnInit {
     await this.carregar();
   }
 
-  async alternarDisponibilidade(a: Area) {
-    let motivo: string | null = null;
-    if (a.disponivel) {
-      const resposta = prompt('Motivo da indisponibilidade (opcional):', '');
-      if (resposta === null) return; // cancelou
-      motivo = resposta.trim() || null;
-    }
-    const { data, error } = await this.store.definirDisponibilidade(a.id, !a.disponivel, motivo);
+
+  abrirIndisponibilidade(a: Area) {
+    this.removendoId.set(null);
+    this.motivo = '';
+    this.motivoAbertoId.set(a.id);
+  }
+
+  fecharIndisponibilidade() {
+    this.motivoAbertoId.set(null);
+  }
+
+  async confirmarIndisponibilidade(a: Area) {
+    const { data, error } = await this.store.definirDisponibilidade(a.id, false, this.motivo.trim() || null);
     if (error || !data || data.length === 0) {
-      this.toast.show('Não foi possível alterar a disponibilidade.');
+      this.toast.show('Não foi possível alterar: ' + (error?.message ?? 'sem permissão.'));
       return;
     }
-    this.toast.show(a.disponivel ? 'Área marcada como indisponível.' : 'Área disponível novamente.');
+    this.motivoAbertoId.set(null);
+    this.toast.show('Área marcada como indisponível.');
     await this.carregar();
   }
 
-  async remover(a: Area) {
-    if (!confirm(`Remover "${a.nome}"?`)) return;
-    const { error } = await this.store.excluirArea(a.id);
-    if (error) { this.toast.show('Erro ao remover: ' + error.message); return; }
+  async disponibilizar(a: Area) {
+    const { data, error } = await this.store.definirDisponibilidade(a.id, true, null);
+    if (error || !data || data.length === 0) {
+      this.toast.show('Não foi possível alterar: ' + (error?.message ?? 'sem permissão.'));
+      return;
+    }
+    this.toast.show('Área disponível novamente.');
+    await this.carregar();
+  }
+
+
+  pedirRemocao(a: Area) {
+    this.motivoAbertoId.set(null);
+    this.removendoId.set(a.id);
+  }
+
+  cancelarRemocao() {
+    this.removendoId.set(null);
+  }
+
+  async confirmarRemocao(a: Area) {
+    const { data, error } = await this.store.excluirArea(a.id);
+    if (error || !data || data.length === 0) {
+      this.toast.show('Não foi possível remover: ' + (error?.message ?? 'sem permissão.'));
+      return;
+    }
+    this.removendoId.set(null);
     this.toast.show('Área removida.');
     if (this.editandoId() === a.id) this.cancelarEdicao();
     await this.carregar();

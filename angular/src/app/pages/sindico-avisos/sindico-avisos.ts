@@ -23,6 +23,7 @@ export class SindicoAvisos implements OnInit {
   avisos = signal<Aviso[]>([]);
   modo = signal<'lista' | 'form'>('lista');
   editandoId = signal<string | null>(null);
+  excluindoId = signal<string | null>(null);
   salvando = signal(false);
   data = formatDateBR;
 
@@ -50,6 +51,7 @@ export class SindicoAvisos implements OnInit {
   }
 
   editar(a: Aviso) {
+    this.excluindoId.set(null);
     this.editandoId.set(a.id);
     this.titulo = a.titulo;
     this.mensagem = a.mensagem;
@@ -90,13 +92,21 @@ export class SindicoAvisos implements OnInit {
     await this.carregar();
   }
 
-  async excluir(a: Aviso) {
-    if (!confirm(`Excluir o aviso "${a.titulo}"?`)) return;
+  pedirExclusao(a: Aviso) {
+    this.excluindoId.set(a.id);
+  }
+
+  cancelarExclusao() {
+    this.excluindoId.set(null);
+  }
+
+  async confirmarExclusao(a: Aviso) {
     const { data, error } = await this.store.excluirAviso(a.id);
     if (error || !data || data.length === 0) {
-      this.toast.show('Não foi possível excluir o aviso.');
+      this.toast.show('Não foi possível excluir: ' + (error?.message ?? 'sem permissão.'));
       return;
     }
+    this.excluindoId.set(null);
     this.toast.show('Aviso excluído.');
     await this.carregar();
   }

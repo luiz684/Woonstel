@@ -14,10 +14,21 @@
           <h3>{{ a.titulo }}</h3>
           <p class="meta" style="margin-bottom:6px;">{{ a.mensagem }}</p>
           <p class="meta">{{ data(a.created_at) }} · {{ a.autor }}</p>
-          <div style="display:flex;gap:8px;margin-top:10px;">
-            <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="editar(a)">Editar</button>
-            <button class="btn btn-danger-ghost btn-sm" type="button" style="width:auto;" (click)="excluir(a)">Excluir</button>
-          </div>
+
+          @if (excluindoId() === a.id) {
+            <div style="margin-top:12px;">
+              <p class="meta" style="margin-bottom:8px;">Excluir este aviso? Os moradores deixarão de vê-lo.</p>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-danger-ghost btn-sm" type="button" style="width:auto;" (click)="confirmarExclusao(a)">Sim, excluir</button>
+                <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="cancelarExclusao()">Cancelar</button>
+              </div>
+            </div>
+          } @else {
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="editar(a)">Editar</button>
+              <button class="btn btn-danger-ghost btn-sm" type="button" style="width:auto;" (click)="pedirExclusao(a)">Excluir</button>
+            </div>
+          }
         </div>
       } @empty {
         <div class="empty-state"><h3>Nenhum aviso publicado</h3></div>

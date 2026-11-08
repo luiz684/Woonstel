@@ -1,9 +1,8 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Aviso, CondominioCompleto, Profile, StoreService } from '../../services/store';
 import { formatDateBR, initials, primeiroNome } from '../../utils/format';
 import { BottomNavMorador } from '../../components/bottom-nav-morador/bottom-nav-morador';
-
 
 @Component({
   selector: 'app-morador-inicio',
@@ -38,12 +37,8 @@ export class MoradorInicio implements OnInit {
     this.cond.set(cond);
     this.pendentes.set(sols.filter(s => s.status !== 'Resolvida').length);
     this.avisos.set(avisos);
+
     const lido = p.avisos_lidos_ate ? new Date(p.avisos_lidos_ate).getTime() : 0;
     this.naoLidos.set(avisos.filter(a => new Date(a.created_at).getTime() > lido).length);
-  }
-
-    async sair() {
-    await this.store.signOut();
-    this.router.navigate(['/']);
   }
 }

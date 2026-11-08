@@ -1,4 +1,4 @@
-<div class="screen no-nav">
+<div class="screen">
   <div class="topbar">
     <a class="back-btn" routerLink="/morador/inicio">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -6,23 +6,18 @@
     <h1>Reservar Área</h1>
   </div>
 
-    @if (indisponiveis().length > 0) {
+  @if (indisponiveis().length > 0) {
     <div class="banner banner-amber">
-      <div class="banner-icon">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/></svg>
-      </div>
       <div>
-      
         <strong>Indisponível no momento</strong>
         @for (a of indisponiveis(); track a.id) {
           <span>{{ a.nome }}: {{ a.motivo_indisponibilidade || 'sem previsão de retorno' }}</span>
         }
       </div>
     </div>
-    
   }
 
-    @if (areas().length === 0) {
+  @if (areas().length === 0) {
     <div class="role-note">Nenhuma área disponível para reserva no momento.</div>
   } @else {
     @if (area; as a) {
@@ -42,10 +37,9 @@
       <div class="field">
         <label for="area">Área Selecionada</label>
         <div class="input-wrap">
-          <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>
-          <select id="area" name="areaId" [(ngModel)]="areaId">
-            @for (a of areas(); track a.id) {
-              <option [value]="a.id">{{ a.nome }}</option>
+          <select id="area" name="areaId" [ngModel]="areaId" (ngModelChange)="aoMudarArea($event)">
+            @for (x of areas(); track x.id) {
+              <option [value]="x.id">{{ x.nome }}</option>
             }
           </select>
           <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -55,31 +49,45 @@
       <div class="field">
         <label for="data">Data da Reserva</label>
         <div class="input-wrap">
-          <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-          <input type="date" id="data" name="data" [(ngModel)]="data" [min]="hoje">
+          <input type="date" id="data" name="data" [ngModel]="data" (ngModelChange)="aoMudarData($event)" [min]="hoje" [max]="maxData">
         </div>
       </div>
 
-      <div class="field">
-        <label for="horario">Horário de Início</label>
-        <div class="input-wrap">
-          <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-          <input type="time" id="horario" name="horario" [(ngModel)]="horario">
+      @if (duracao) {
+        <div class="field">
+          @if (!data) {
+          } @else {
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+              @for (s of slots; track s.inicio) {
+                <div class="chip" [class.active]="slotInicio === s.inicio"
+                     [style.opacity]="s.indisponivel ? 0.4 : 1"
+                     [style.pointer-events]="s.indisponivel ? 'none' : 'auto'"
+                     (click)="escolherSlot(s)">
+                  {{ s.inicio }} às {{ s.fim }}
+                </div>
+              }
+            </div>
+          }
         </div>
-      </div>
-
-      <div class="field">
-        <label for="periodo">Período</label>
-        <div class="input-wrap">
-          <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-          <select id="periodo" name="periodo" [(ngModel)]="periodo">
-            <option value="Manhã (08:00 às 12:00)">Manhã (08:00 às 12:00)</option>
-            <option value="Tarde (12:00 às 18:00)">Tarde (12:00 às 18:00)</option>
-            <option value="Noite (18:00 às 23:00)">Noite (18:00 às 23:00)</option>
-          </select>
-          <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      } @else {
+        <div style="display:flex;gap:12px;">
+          <div class="field" style="flex:1;">
+            <label for="inicio">Início</label>
+            <div class="input-wrap">
+              <input type="time" id="inicio" name="inicio" [(ngModel)]="inicio" min="08:00" max="23:00">
+            </div>
+          </div>
+          <div class="field" style="flex:1;">
+            <label for="fim">Fim</label>
+            <div class="input-wrap">
+              <input type="time" id="fim" name="fim" [(ngModel)]="fim" min="08:00" max="23:00">
+            </div>
+          </div>
         </div>
-      </div>
+        @if (ocupados().length > 0) {
+          <p class="meta" style="margin-bottom:12px;">Já reservado neste dia: {{ horariosDoDia }}</p>
+        }
+      }
 
       <div class="total-row">
         <span class="lbl">Valor total da reserva:</span>
@@ -95,3 +103,4 @@
     </form>
   }
 </div>
+<app-bottom-nav-morador active="reservas" />

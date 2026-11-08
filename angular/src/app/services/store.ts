@@ -83,6 +83,7 @@ export interface Area {
   taxa: number;
   disponivel: boolean;
   motivo_indisponibilidade: string | null;
+  duracao_min: number | null;
 }
 
 export interface Reserva {
@@ -173,8 +174,6 @@ export class StoreService {
     if (!perfil) return null;
     return { perfil, cond: await this.getCondominioDoSindico(perfil.id) };
   }
-
-
 
   async getCondominio(id: string | null): Promise<CondominioCompleto | null> {
     if (!id) return null;
@@ -315,26 +314,23 @@ export class StoreService {
   }
 
 
-    async getAreas(condId: string | null): Promise<Area[]> {
+       async getAreas(condId: string | null): Promise<Area[]> {
     if (!condId) return [];
     const { data } = await this.supabase
       .from('areas')
-      .select('id, nome, capacidade, taxa, disponivel, motivo_indisponibilidade')
+      .select('id, nome, capacidade, taxa, disponivel, motivo_indisponibilidade, duracao_min')
       .eq('condominio_id', condId).order('nome');
     return (data as Area[]) ?? [];
   }
 
-    async criarArea(condId: string, a: { nome: string; capacidade: string; taxa: number }) {
-    return this.supabase.from('areas').insert({
-      condominio_id: condId,
-      nome: a.nome,
-      capacidade: a.capacidade,
-      taxa: a.taxa,
-    });
+    async criarArea(condId: string, a: {
+    nome: string; capacidade: string; taxa: number; duracao_min: number | null;
+  }) {
+    return this.supabase.from('areas').insert({ condominio_id: condId, ...a });
   }
 
-  async excluirArea(id: string) {
-    return this.supabase.from('areas').delete().eq('id', id);
+    async excluirArea(id: string) {
+    return this.supabase.from('areas').delete().eq('id', id).select('id');
   }
 
   async getReservasDoMorador(moradorId: string): Promise<Reserva[]> {
@@ -345,7 +341,7 @@ export class StoreService {
     return (data as Reserva[]) ?? [];
   }
 
-  async criarReserva(p: Profile, area: Area, d: { data: string; horario: string; periodo: string }) {
+   async criarReserva(p: Profile, area: Area, d: { data: string; inicio: string; fim: string }) {
     return this.supabase.from('reservas').insert({
       condominio_id: p.condominio_id,
       morador_id: p.id,
@@ -354,8 +350,9 @@ export class StoreService {
       area_id: area.id,
       area_nome: area.nome,
       data: d.data,
-      horario: d.horario,
-      periodo: d.periodo,
+      horario_inicio: d.inicio,
+      horario_fim: d.fim,
+      periodo: `${d.inicio} às ${d.fim}`,
       valor: area.taxa,
       status: 'Confirmada',
     });
@@ -392,7 +389,9 @@ export class StoreService {
     });
 
   }
-    async atualizarArea(id: string, a: { nome: string; capacidade: string; taxa: number }) {
+     async atualizarArea(id: string, a: {
+    nome: string; capacidade: string; taxa: number; duracao_min: number | null;
+  }) {
     return this.supabase.from('areas').update(a).eq('id', id).select('id');
   }
 
@@ -414,5 +413,17 @@ export class StoreService {
     return this.supabase.from('profiles')
       .update({ avisos_lidos_ate: new Date().toISOString() })
       .eq('id', moradorId);
+  }
+
+    async getHorariosOcupados(areaId: string, data: string): Promise<{ inicio: string; fim: string }[]> {
+    const { data: res, error } = await this.supabase.rpc('horarios_ocupados', {
+      p_area: areaId,
+      p_data: data,
+    });
+    if (error) { console.error(error); return []; }
+    return ((res as { inicio: string; fim: string }[]) ?? []).map(r => ({
+      inicio: r.inicio.slice(0, 5),
+      fim: r.fim.slice(0, 5),
+    }));
   }
 }
