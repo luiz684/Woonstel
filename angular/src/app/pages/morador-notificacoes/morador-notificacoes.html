@@ -1,0 +1,29 @@
+<div class="screen">
+  <div class="topbar">
+    <a class="back-btn" routerLink="/morador/inicio">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Notificações</h1>
+  </div>
+
+  <div class="list">
+    @for (n of itens(); track n.id) {
+      <a class="req-card" [routerLink]="n.link || '/morador/inicio'">
+        @if (novas().has(n.id)) {
+          <div class="badge-row"><span class="badge badge-blue">NOVA</span></div>
+        }
+        <h3>{{ n.titulo }}</h3>
+        <p class="meta">{{ n.mensagem }}</p>
+        <p class="meta" style="margin-top:4px;">{{ data(n.created_at) }}</p>
+      </a>
+    } @empty {
+      @if (carregado()) {
+        <div class="empty-state">
+          <h3>Nenhuma notificação</h3>
+          <p>Mudanças nas suas solicitações, reservas e avisos aparecem aqui.</p>
+        </div>
+      }
+    }
+  </div>
+</div>
+<app-bottom-nav-morador active="inicio" />

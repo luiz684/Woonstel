@@ -17,7 +17,16 @@
     </div>
   }
 
-  @if (areas().length === 0) {
+  @if (reservaAtiva(); as r) {
+    <div class="banner banner-amber">
+      <div>
+        <strong>Você já tem uma reserva</strong>
+        <span>{{ r.area_nome }} · {{ formatarData(r.data) }} · {{ r.horario_inicio.slice(0, 5) }} às {{ r.horario_fim.slice(0, 5) }}</span>
+        <span>Você poderá reservar de novo depois que o horário dela terminar.</span>
+      </div>
+    </div>
+    <a class="btn btn-primary" routerLink="/morador/reservas" style="display:flex;">Ver minhas reservas</a>
+  } @else if (areas().length === 0) {
     <div class="role-note">Nenhuma área disponível para reserva no momento.</div>
   } @else {
     @if (area; as a) {

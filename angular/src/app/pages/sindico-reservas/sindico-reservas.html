@@ -6,22 +6,35 @@
     <h1>Reservas de área</h1>
   </div>
 
+  <app-filtro-chips [opcoes]="opcoes()" [(valor)]="filtro" />
+
   <div class="list">
-    @for (r of reservas(); track r.id) {
+    @for (r of lista(); track r.id) {
       <div class="req-card">
-        <div class="badge-row"><span class="badge badge-green">{{ r.status }}</span></div>
+        <div class="badge-row"><span class="badge" [class]="badge[rotulo(r)]">{{ rotulo(r) }}</span></div>
         <h3>{{ r.area_nome }}</h3>
         <p class="meta">{{ data(r.data) }} · {{ r.periodo }}</p>
         <p class="meta" style="margin-top:4px;">{{ r.morador_nome }} · Apto {{ r.apto }}</p>
         <p class="meta" style="margin-top:4px;"><strong>{{ r.valor > 0 ? brl(r.valor) : 'Sem taxa' }}</strong></p>
+
+        @if (r.status === 'Cancelada') {
+          <p class="meta" style="margin-top:6px;">
+            Cancelada {{ r.cancelada_por_tipo === 'sindico' ? 'por você' : 'pelo morador' }}: {{ r.motivo_cancelamento }}
+          </p>
+        } @else if (ativa(r)) {
+          @if (cancelandoId() === r.id) {
+            <app-cancelar-reserva [motivos]="motivos" [salvando]="salvando()"
+                                  (confirmar)="cancelar(r, $event)" (voltar)="cancelandoId.set(null)" />
+          } @else {
+            <button class="btn btn-danger-ghost btn-sm" type="button" style="width:auto;margin-top:10px;"
+                    (click)="cancelandoId.set(r.id)">Cancelar reserva</button>
+          }
+        }
       </div>
     } @empty {
-      @if (carregado()) {
-        <div class="empty-state">
-          <h3>Nenhuma reserva ainda</h3>
-          <p>As reservas feitas pelos moradores aparecem aqui.</p>
-        </div>
-      }
+      <div class="empty-state">
+        <h3>{{ filtro() === 'Em aberto' ? 'Nenhuma reserva em aberto' : 'Nenhuma reserva encontrada' }}</h3>
+      </div>
     }
   </div>
 </div>

@@ -1,0 +1,7 @@
+<div class="chip-row wrap" style="margin-bottom:16px;">
+  @for (o of opcoes(); track o.valor) {
+    <div class="chip" [class.active]="valor() === o.valor" (click)="valor.set(o.valor)">
+      {{ o.valor }} ({{ o.qtd }})
+    </div>
+  }
+</div>

@@ -11,8 +11,17 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input type="text" placeholder="Buscar solicitações..." [value]="busca()" (input)="onBusca($event)">
     </div>
-    <button class="filter-btn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button>
+    <button class="filter-btn" type="button" aria-label="Mostrar ou ocultar filtros"
+            [style.background]="filtro() !== 'Em aberto' ? 'var(--primary-light)' : null"
+            [style.color]="filtro() !== 'Em aberto' ? 'var(--primary)' : null"
+            (click)="mostrarFiltros.set(!mostrarFiltros())">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+    </button>
   </div>
+
+  @if (mostrarFiltros()) {
+    <app-filtro-chips [opcoes]="opcoes()" [(valor)]="filtro" />
+  }
 
   <div class="list">
     @for (s of lista(); track s.id) {
@@ -26,11 +35,9 @@
       </a>
     } @empty {
       <div class="empty-state">
-        <div class="ei"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 5h6M9 3v4M4 8h16v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/></svg></div>
-        <h3>Nenhuma solicitação encontrada</h3>
-        <p>Suas solicitações de manutenção vão aparecer aqui.</p>
+        <h3>{{ filtro() === 'Em aberto' && !busca() ? 'Nenhuma solicitação em aberto' : 'Nenhuma solicitação encontrada' }}</h3>
       </div>
     }
   </div>
 </div>
-<app-bottom-nav-morador active="ocorrencias"/>
+<app-bottom-nav-morador active="ocorrencias" />

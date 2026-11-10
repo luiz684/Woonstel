@@ -1,9 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Area, Profile, StoreService } from '../../services/store';
 import { ToastService } from '../../services/toast';
-import { brl } from '../../utils/format';
+import { Area, Profile, ReservaAtiva, StoreService } from '../../services/store';
+import { brl, formatDateOnlyBR } from '../../utils/format';
 import { BottomNavMorador } from '../../components/bottom-nav-morador/bottom-nav-morador';
 
 interface Faixa { inicio: string; fim: string; }
@@ -45,6 +45,8 @@ export class MoradorReservarArea implements OnInit {
   ocupados = signal<Faixa[]>([]);
   salvando = signal(false);
   brl = brl;
+  formatarData = formatDateOnlyBR;
+  reservaAtiva = signal<ReservaAtiva | null>(null);
 
   areaId = '';
   data = '';
@@ -103,6 +105,7 @@ export class MoradorReservarArea implements OnInit {
     this.areas.set(lista.filter(a => a.disponivel));
     this.indisponiveis.set(lista.filter(a => !a.disponivel));
     this.areaId = this.areas()[0]?.id ?? '';
+    this.reservaAtiva.set(await this.store.getReservaAtiva(this.perfil.id));
   }
 
   private dataValida(): boolean {

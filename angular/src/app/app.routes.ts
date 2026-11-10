@@ -21,6 +21,7 @@ import { SindicoPerfil } from './pages/sindico-perfil/sindico-perfil';
 import { SindicoAreas } from './pages/sindico-areas/sindico-areas';
 import { SindicoDashboard } from './pages/sindico-dashboard/sindico-dashboard';
 import { MoradorAvisos } from './pages/morador-avisos/morador-avisos';
+import { MoradorNotificacoes } from './pages/morador-notificacoes/morador-notificacoes';
 
 
 
@@ -54,6 +55,7 @@ export const routes: Routes = [
   { path: 'sindico/areas', component: SindicoAreas },
   { path: 'sindico/dashboard', component: SindicoDashboard },
   { path: 'morador/avisos', component: MoradorAvisos },
+  { path: 'morador/notificacoes', component: MoradorNotificacoes },
 
   { path: '**', redirectTo: '' },
 ];

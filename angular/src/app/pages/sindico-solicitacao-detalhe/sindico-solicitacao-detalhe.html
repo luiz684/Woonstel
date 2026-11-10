@@ -1,4 +1,4 @@
-<div class="screen no-nav">
+<div class="screen">
   <div class="topbar">
     <a class="back-btn" routerLink="/sindico/solicitacoes">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -42,6 +42,40 @@
       }
 
       <div class="detail-card">
+        <div class="section-title" style="margin-bottom:10px;">Prioridade</div>
+        @if (podeMudarPrioridade) {
+          <div class="chip-row">
+            @for (p of prioridades; track p) {
+              <div class="chip" [class.active]="(prioridadeNova() ?? sol.prioridade) === p" (click)="escolherPrioridade(p)">{{ p }}</div>
+            }
+          </div>
+          @if (prioridadeNova(); as nova) {
+            <p class="meta" style="margin-top:10px;">
+              Alterar a prioridade de <strong>{{ sol.prioridade ?? '—' }}</strong> para <strong>{{ nova }}</strong>?
+            </p>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="btn btn-primary btn-sm" type="button" style="width:auto;" [disabled]="salvando()" (click)="confirmarPrioridade()">Confirmar</button>
+              <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="prioridadeNova.set(null)">Cancelar</button>
+            </div>
+          }
+        } @else {
+          <p class="meta">{{ sol.prioridade ?? '—' }} · A prioridade só pode ser alterada enquanto a solicitação está pendente.</p>
+        }
+      </div>
+
+      <div class="detail-card">
+        <div class="section-title" style="margin-bottom:10px;">Responder ao morador</div>
+        @if (podeResponder) {
+          <div class="field" style="margin-bottom:10px;">
+            <textarea [(ngModel)]="resposta" name="resposta" maxlength="500" placeholder="Ex: O eletricista passa amanhã às 14h."></textarea>
+          </div>
+          <button class="btn btn-primary" type="button" [disabled]="enviando()" (click)="enviarResposta()">Enviar resposta</button>
+        } @else {
+          <p class="meta">Esta solicitação foi resolvida. Não é possível enviar novas mensagens.</p>
+        }
+      </div>
+
+      <div class="detail-card">
         <div class="section-title" style="margin-bottom:14px;">Histórico de Atualizações</div>
         <div class="timeline">
           @for (h of sol.historico; track $index) {
@@ -51,7 +85,12 @@
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
                 }
               </div>
-              <div class="tl-text"><strong>{{ h.status }}</strong><span>{{ h.data }}</span></div>
+              <div class="tl-text">
+                <strong>{{ h.status }}</strong><span>{{ h.data }}</span>
+                @if (h.comentario) {
+                  <p class="meta" style="margin-top:6px;">{{ h.comentario }}</p>
+                }
+              </div>
             </div>
           }
         </div>
@@ -72,3 +111,4 @@
     }
   }
 </div>
+<app-bottom-nav-sindico active="solicitacoes" />

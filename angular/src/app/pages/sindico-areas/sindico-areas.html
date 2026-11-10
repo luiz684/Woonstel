@@ -8,30 +8,44 @@
 
   <form (ngSubmit)="salvar()" style="margin-bottom:24px;">
     <div class="section-title">{{ editandoId() ? 'Editar área' : 'Nova área' }}</div>
+
     <div class="field">
       <label for="nome">Nome da área</label>
       <div class="input-wrap">
         <input type="text" id="nome" name="nome" [(ngModel)]="nome" placeholder="Ex: Salão de Festas">
       </div>
     </div>
+
     <div class="field">
       <label for="capacidade">Capacidade</label>
       <div class="input-wrap">
         <input type="text" id="capacidade" name="capacidade" [(ngModel)]="capacidade" placeholder="Ex: Até 50 pessoas">
       </div>
     </div>
+
     <div class="field">
-      <label for="taxa">Taxa de uso (R$)</label>
-          <div class="field">
-      <label for="duracao">Duração fixa por reserva (minutos)</label>
+      <label for="taxa">Taxa de uso</label>
       <div class="input-wrap">
-        <input type="number" id="duracao" name="duracao" [(ngModel)]="duracao" min="15" max="720" step="15" placeholder="Vazio = horário livre. Ex: 90 para 1h30">
+        <input type="text" id="taxa" name="taxa" inputmode="numeric" autocomplete="off"
+               [value]="taxaTexto" (input)="onTaxa($event)" placeholder="R$ 0,00">
       </div>
+      <p class="meta" style="margin-top:6px;"></p>
     </div>
+
+    <div class="field">
+      <label for="duracao">Duração de cada reserva</label>
       <div class="input-wrap">
-        <input type="number" id="taxa" name="taxa" [(ngModel)]="taxa" min="0" step="0.01" placeholder="0 = sem taxa">
+        <input type="text" id="duracao" name="duracao" inputmode="numeric" autocomplete="off"
+               [value]="duracaoTexto" (input)="onDuracao($event)" placeholder="Ex: 90" style="padding-right:48px;">
+        <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:13px;pointer-events:none;">min</span>
       </div>
+      @if (duracaoMin) {
+        <p class="meta" style="margin-top:6px;"></p>
+      } @else {
+        <p class="meta" style="margin-top:6px;"></p>
+      }
     </div>
+
     <button type="submit" class="btn btn-primary" [disabled]="salvando()">
       {{ editandoId() ? 'Salvar alterações' : 'Adicionar área' }}
     </button>
@@ -49,7 +63,7 @@
           </span>
         </div>
         <h3>{{ a.nome }}</h3>
-          <p class="meta">{{ a.capacidade }} · {{ a.taxa > 0 ? brl(a.taxa) : 'Sem taxa' }}@if (a.duracao_min) { · {{ a.duracao_min }} min por reserva }</p>
+        <p class="meta">{{ a.capacidade }} · {{ a.taxa > 0 ? brl(a.taxa) : 'Sem taxa' }}@if (a.duracao_min) { · {{ a.duracao_min }} min por reserva }</p>
         @if (!a.disponivel && a.motivo_indisponibilidade) {
           <p class="meta" style="margin-top:4px;">Motivo: {{ a.motivo_indisponibilidade }}</p>
         }
@@ -57,9 +71,9 @@
         @if (motivoAbertoId() === a.id) {
           <div style="margin-top:12px;">
             <div class="field" style="margin-bottom:10px;">
-              <label>Motivo da indisponibilidade (opcional)</label>
+              <label>Motivo da indisponibilidade</label>
               <div class="input-wrap">
-                <input type="text" [(ngModel)]="motivo" placeholder="Ex: Reforma no piso">
+                <input type="text" [(ngModel)]="motivo" name="motivo" placeholder="Ex: Reforma no piso (opcional)">
               </div>
             </div>
             <div style="display:flex;gap:8px;">

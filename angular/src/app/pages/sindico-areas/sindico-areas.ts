@@ -6,6 +6,14 @@ import { ToastService } from '../../services/toast';
 import { brl } from '../../utils/format';
 import { BottomNavSindico } from '../../components/bottom-nav-sindico/bottom-nav-sindico';
 
+function formatarReais(centavos: number): string {
+  if (centavos <= 0) return '';
+  return 'R$ ' + (centavos / 100).toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 @Component({
   selector: 'app-sindico-areas',
   imports: [FormsModule, RouterLink, BottomNavSindico],
@@ -22,15 +30,27 @@ export class SindicoAreas implements OnInit {
   areas = signal<Area[]>([]);
   salvando = signal(false);
   editandoId = signal<string | null>(null);
-  motivoAbertoId = signal<string | null>(null); 
-  removendoId = signal<string | null>(null);    
+  motivoAbertoId = signal<string | null>(null);
+  removendoId = signal<string | null>(null);
   brl = brl;
 
   nome = '';
   capacidade = '';
-  taxa: number | null = 0;
   motivo = '';
-  duracao: null | undefined;
+
+  // campos com máscara
+  taxaCentavos = 0;
+  taxaTexto = '';
+  duracaoMin: number | null = null;
+  duracaoTexto = '';
+
+  get textoDuracao(): string {
+    const d = this.duracaoMin ?? 0;
+    const h = Math.floor(d / 60);
+    const m = d % 60;
+    if (h === 0) return `${m} min`;
+    return m ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`;
+  }
 
   async ngOnInit() {
     const ctx = await this.store.requireSindico();
@@ -44,13 +64,33 @@ export class SindicoAreas implements OnInit {
     if (this.cond) this.areas.set(await this.store.getAreas(this.cond.id));
   }
 
+
+  onTaxa(e: Event) {
+    const el = e.target as HTMLInputElement;
+    const digitos = el.value.replace(/\D/g, '').slice(0, 8);
+    this.taxaCentavos = Number(digitos || '0');
+    this.taxaTexto = formatarReais(this.taxaCentavos);
+    el.value = this.taxaTexto;
+  }
+
+  onDuracao(e: Event) {
+    const el = e.target as HTMLInputElement;
+    let n = Number(el.value.replace(/\D/g, '').slice(0, 3) || '0');
+    if (n > 720) n = 720;
+    this.duracaoMin = n > 0 ? n : null;
+    this.duracaoTexto = n > 0 ? String(n) : '';
+    el.value = this.duracaoTexto;
+  }
+
+
   private limpar() {
     this.nome = '';
     this.capacidade = '';
-    this.taxa = 0;
-    this.duracao = null;
+    this.taxaCentavos = 0;
+    this.taxaTexto = '';
+    this.duracaoMin = null;
+    this.duracaoTexto = '';
   }
-
 
   editar(a: Area) {
     this.motivoAbertoId.set(null);
@@ -58,7 +98,10 @@ export class SindicoAreas implements OnInit {
     this.editandoId.set(a.id);
     this.nome = a.nome;
     this.capacidade = a.capacidade ?? '';
-    this.taxa = a.taxa;
+    this.taxaCentavos = Math.round(a.taxa * 100);
+    this.taxaTexto = formatarReais(this.taxaCentavos);
+    this.duracaoMin = a.duracao_min;
+    this.duracaoTexto = a.duracao_min ? String(a.duracao_min) : '';
     document.getElementById('nome')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
@@ -73,11 +116,16 @@ export class SindicoAreas implements OnInit {
       this.toast.show('Informe o nome da área.');
       return;
     }
+    if (this.duracaoMin !== null && this.duracaoMin < 15) {
+      this.toast.show('A duração mínima de cada reserva é 15 minutos.');
+      return;
+    }
+
     const dados = {
       nome: this.nome.trim(),
       capacidade: this.capacidade.trim(),
-      taxa: Number(this.taxa ?? 0),
-      duracao_min: this.duracao ? Number(this.duracao) : null,
+      taxa: this.taxaCentavos / 100,
+      duracao_min: this.duracaoMin,
     };
 
     this.salvando.set(true);

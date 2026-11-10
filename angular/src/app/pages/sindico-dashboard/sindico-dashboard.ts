@@ -47,10 +47,10 @@ export class SindicoDashboard implements OnInit {
     this.resolvidas.set(sols.filter(s => s.status === 'Resolvida').length);
     this.moradores.set(moradores);
 
-    // Reservas do mês atual (datas no formato AAAA-MM-DD)
+    
     const hoje = new Date();
     const ym = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
-    this.reservasMes.set(reservas.filter(r => r.data.startsWith(ym)).length);
+    this.reservasMes.set(reservas.filter(r => r.status === 'Confirmada' && r.data.startsWith(ym)).length);
 
     const status = new Map<string, number>([['Pendente', 0], ['Em andamento', 0], ['Resolvida', 0]]);
     const categorias = new Map<string, number>();
@@ -60,7 +60,8 @@ export class SindicoDashboard implements OnInit {
       categorias.set(c, (categorias.get(c) ?? 0) + 1);
     }
     const areas = new Map<string, number>();
-    for (const r of reservas) {
+        for (const r of reservas) {
+      if (r.status !== 'Confirmada') continue;
       const a = r.area_nome?.trim() || 'Sem área';
       areas.set(a, (areas.get(a) ?? 0) + 1);
     }

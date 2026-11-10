@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_KEY } from '../supabase.config';
+import { dataHoraLabel } from '../utils/format';
 
 export type Tipo = 'condomino' | 'sindico' | 'funcionario';
 
@@ -52,6 +53,35 @@ export interface HistoricoItem {
   status: string;
   data: string;
   done: boolean;
+  comentario?: string;
+}
+
+export interface Reserva {
+  id: string;
+  area_nome: string | null;
+  data: string;
+  periodo: string | null;
+  valor: number;
+  status: string;
+  horario_inicio: string;
+  horario_fim: string;
+  cancelada_por_tipo: 'morador' | 'sindico' | null;
+  motivo_cancelamento: string | null;
+}
+
+export interface ReservaSindico extends Reserva {
+  morador_nome: string | null;
+  apto: string | null;
+}
+
+export interface Notificacao {
+  id: string;
+  tipo: string;
+  titulo: string;
+  mensagem: string | null;
+  link: string | null;
+  lida: boolean;
+  created_at: string;
 }
 
 export interface SolicitacaoDetalhe {
@@ -86,25 +116,16 @@ export interface Area {
   duracao_min: number | null;
 }
 
-export interface Reserva {
+
+
+export interface ReservaAtiva {
   id: string;
   area_nome: string | null;
   data: string;
-  periodo: string | null;
-  valor: number;
-  status: string;
+  horario_inicio: string;
+  horario_fim: string;
 }
 
-export interface ReservaSindico {
-  id: string;
-  area_nome: string | null;
-  morador_nome: string | null;
-  apto: string | null;
-  data: string;
-  periodo: string | null;
-  valor: number;
-  status: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class StoreService {
@@ -335,7 +356,8 @@ export class StoreService {
 
   async getReservasDoMorador(moradorId: string): Promise<Reserva[]> {
     const { data } = await this.supabase
-      .from('reservas').select('id, area_nome, data, periodo, valor, status')
+      .from('reservas')
+      .select('id, area_nome, data, periodo, valor, status, horario_inicio, horario_fim, cancelada_por_tipo, motivo_cancelamento')
       .eq('morador_id', moradorId)
       .order('data', { ascending: false });
     return (data as Reserva[]) ?? [];
@@ -361,7 +383,7 @@ export class StoreService {
   async getReservasDoCondominio(condId: string): Promise<ReservaSindico[]> {
     const { data } = await this.supabase
       .from('reservas')
-      .select('id, area_nome, morador_nome, apto, data, periodo, valor, status')
+      .select('id, area_nome, morador_nome, apto, data, periodo, valor, status, horario_inicio, horario_fim, cancelada_por_tipo, motivo_cancelamento')
       .eq('condominio_id', condId)
       .order('data', { ascending: false });
     return (data as ReservaSindico[]) ?? [];
@@ -425,5 +447,75 @@ export class StoreService {
       inicio: r.inicio.slice(0, 5),
       fim: r.fim.slice(0, 5),
     }));
+  }
+
+  async getReservaAtiva(moradorId: string): Promise<ReservaAtiva | null> {
+    const hoje = new Date();
+    const dataHoje = hoje.getFullYear() + '-' +
+      String(hoje.getMonth() + 1).padStart(2, '0') + '-' +
+      String(hoje.getDate()).padStart(2, '0');
+
+    const { data } = await this.supabase
+      .from('reservas')
+      .select('id, area_nome, data, horario_inicio, horario_fim')
+      .eq('morador_id', moradorId)
+      .eq('status', 'Confirmada')
+      .gte('data', dataHoje)
+      .order('data')
+      .order('horario_inicio');
+
+    const agora = new Date();
+    const ativa = ((data as ReservaAtiva[]) ?? []).find(
+      r => new Date(`${r.data}T${r.horario_fim}`) > agora);
+    return ativa ?? null;
+  }
+
+    async cancelarReserva(id: string, motivo: string) {
+    return this.supabase.rpc('cancelar_reserva', { p_id: id, p_motivo: motivo });
+  }
+
+    async atualizarPrioridade(s: SolicitacaoDetalhe, nova: 'Baixa' | 'Média' | 'Alta') {
+    return this.supabase
+      .from('solicitacoes')
+      .update({
+        prioridade: nova,
+        historico: [
+          ...(s.historico ?? []),
+          { status: `Prioridade alterada: ${s.prioridade ?? '—'} → ${nova}`, data: dataHoraLabel(), done: true },
+        ],
+      })
+      .eq('id', s.id)
+      .select('id');
+  }
+
+  async responderSolicitacao(s: SolicitacaoDetalhe, texto: string) {
+    return this.supabase
+      .from('solicitacoes')
+      .update({
+        historico: [
+          ...(s.historico ?? []),
+          { status: 'Resposta do síndico', data: dataHoraLabel(), done: true, comentario: texto },
+        ],
+      })
+      .eq('id', s.id)
+      .select('id');
+  }
+
+  async getNotificacoes(): Promise<Notificacao[]> {
+    const { data } = await this.supabase
+      .from('notificacoes').select('*')
+      .order('created_at', { ascending: false }).limit(50);
+    return (data as Notificacao[]) ?? [];
+  }
+
+  async countNotificacoesNaoLidas(): Promise<number> {
+    const { count } = await this.supabase
+      .from('notificacoes').select('id', { count: 'exact', head: true })
+      .eq('lida', false);
+    return count ?? 0;
+  }
+
+  async marcarNotificacoesLidas() {
+    return this.supabase.from('notificacoes').update({ lida: true }).eq('lida', false);
   }
 }
