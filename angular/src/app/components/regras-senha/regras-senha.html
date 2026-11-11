@@ -1,0 +1,5 @@
+<ul style="list-style:none;padding:0;margin:0 0 14px;">
+  @for (r of regras(); track r.texto) {
+    <li class="meta" [style.color]="r.ok ? '#16A34A' : null">{{ r.ok ? '✓' : '○' }} {{ r.texto }}</li>
+  }
+</ul>

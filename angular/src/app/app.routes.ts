@@ -3,7 +3,6 @@ import { Login } from './pages/login/login';
 import { CriarConta } from './pages/criar-conta/criar-conta';
 import { EsqueciSenha } from './pages/esqueci-senha/esqueci-senha';
 import { MoradorInicio } from './pages/morador-inicio/morador-inicio';
-
 import { MoradorMinhasSolicitacoes } from './pages/morador-minhas-solicitacoes/morador-minhas-solicitacoes';
 import { MoradorSolicitacaoDetalhe } from './pages/morador-solicitacao-detalhe/morador-solicitacao-detalhe';
 import { MoradorSolicitarManutencao } from './pages/morador-solicitar-manutencao/morador-solicitar-manutencao';
@@ -22,6 +21,7 @@ import { SindicoAreas } from './pages/sindico-areas/sindico-areas';
 import { SindicoDashboard } from './pages/sindico-dashboard/sindico-dashboard';
 import { MoradorAvisos } from './pages/morador-avisos/morador-avisos';
 import { MoradorNotificacoes } from './pages/morador-notificacoes/morador-notificacoes';
+import { Convite } from './pages/convite/convite';
 
 
 
@@ -29,7 +29,6 @@ export const routes: Routes = [
   { path: '', component: Login },
   { path: 'criar-conta', component: CriarConta },
   { path: 'esqueci-senha', component: EsqueciSenha },
-
   { path: 'morador/inicio', component: MoradorInicio },
   { path: 'morador/minhas-solicitacoes', component: MoradorMinhasSolicitacoes },
   { path: 'morador/solicitacao/:id', component: MoradorSolicitacaoDetalhe },
@@ -37,7 +36,6 @@ export const routes: Routes = [
   { path: 'morador/reservas', component: MoradorReservas },
   { path: 'morador/reservar-area', component: MoradorReservarArea },
   { path: 'morador/perfil', component: MoradorPerfil },
-
   { path: 'sindico/inicio', component: SindicoInicio },
   { path: 'sindico/cadastrar-condominio', component: SindicoCadastrarCondominio },
   { path: 'sindico/solicitacoes', component: SindicoSolicitacoes },
@@ -46,7 +44,6 @@ export const routes: Routes = [
   { path: 'sindico/reservas', component: SindicoReservas },
   { path: 'sindico/avisos', component: SindicoAvisos },
   { path: 'sindico/perfil', component: SindicoPerfil },
-
   { path: 'sindico/solicitacoes', component: SindicoSolicitacoes },
   { path: 'sindico/solicitacao/:id', component: SindicoSolicitacaoDetalhe },
   { path: 'sindico/moradores', component: SindicoMoradores },
@@ -56,6 +53,6 @@ export const routes: Routes = [
   { path: 'sindico/dashboard', component: SindicoDashboard },
   { path: 'morador/avisos', component: MoradorAvisos },
   { path: 'morador/notificacoes', component: MoradorNotificacoes },
-
+  { path: 'convite/:token', component: Convite },
   { path: '**', redirectTo: '' },
 ];

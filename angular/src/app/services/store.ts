@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { SUPABASE_URL, SUPABASE_KEY } from '../supabase.config';
+import { SUPABASE_URL, SUPABASE_KEY, LOGIN_FUNCTION } from '../supabase.config';
 import { dataHoraLabel } from '../utils/format';
 
 export type Tipo = 'condomino' | 'sindico' | 'funcionario';
@@ -14,6 +14,7 @@ export interface Profile {
   condominio_id: string | null;
   apto: string | null;
   avisos_lidos_ate: string | null;
+  ativo: boolean;
 }
 
 export interface Condominio {
@@ -126,6 +127,27 @@ export interface ReservaAtiva {
   horario_fim: string;
 }
 
+export interface ConviteMorador {
+  id: string;
+  nome: string;
+  cpf: string;
+  email: string;
+  apto: string;
+  token: string;
+  expira_em: string;
+  usado_em: string | null;
+  cancelado_em: string | null;
+  created_at: string;
+}
+
+export interface ConviteInfo {
+  nome: string;
+  email: string;
+  tipo: string;
+  condominio: string;
+  apto: string | null;
+}
+
 
 @Injectable({ providedIn: 'root' })
 export class StoreService {
@@ -139,14 +161,6 @@ export class StoreService {
     return data ?? [];
   }
 
-  async findEmailByCpfTipo(cpf: string, tipo: string): Promise<string | null> {
-    const { data, error } = await this.supabase.rpc('get_email_by_cpf_tipo', {
-      p_cpf: cpf,
-      p_tipo: tipo,
-    });
-    if (error) console.error(error);
-    return data ?? null;
-  }
 
   async signUp(u: NovoUsuario) {
     return this.supabase.auth.signUp({
@@ -164,21 +178,39 @@ export class StoreService {
     });
   }
 
-  async signIn(cpf: string, tipo: string, senha: string): Promise<Profile | null> {
-    const email = await this.findEmailByCpfTipo(cpf, tipo);
-    if (!email) return null;
-    const { error } = await this.supabase.auth.signInWithPassword({ email, password: senha });
-    if (error) return null;
+        async signIn(cpf: string, tipo: string, senha: string): Promise<Profile | null> {
+    const { data, error } = await this.supabase.functions.invoke(LOGIN_FUNCTION, {
+      body: { cpf, tipo, senha },
+    });
+
+    if (error) {
+  
+      const status = (error as { context?: Response }).context?.status;
+      if (status !== 401) console.error('Falha na função de login:', error);
+      return null;
+    }
+    if (!data?.access_token) return null;
+
+    const { error: e2 } = await this.supabase.auth.setSession({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+    });
+    if (e2) return null;
     return this.getCurrentProfile();
   }
 
-  async getCurrentProfile(): Promise<Profile | null> {
+    async getCurrentProfile(): Promise<Profile | null> {
     const { data: sessionData } = await this.supabase.auth.getSession();
     const userId = sessionData.session?.user.id;
     if (!userId) return null;
     const { data } = await this.supabase
       .from('profiles').select('*').eq('id', userId).single();
-    return (data as Profile) ?? null;
+    const perfil = (data as Profile) ?? null;
+    if (perfil && perfil.ativo === false) {
+      await this.supabase.auth.signOut();
+      return null;
+    }
+    return perfil;
   }
 
   async signOut() {
@@ -517,5 +549,46 @@ export class StoreService {
 
   async marcarNotificacoesLidas() {
     return this.supabase.from('notificacoes').update({ lida: true }).eq('lida', false);
+  }
+
+    async criarConvite(d: { nome: string; cpf: string; email: string; apto: string }) {
+    return this.supabase.rpc('criar_convite', {
+      p_nome: d.nome, p_cpf: d.cpf, p_email: d.email, p_apto: d.apto,
+    });
+  }
+
+  async getConvites(condId: string): Promise<ConviteMorador[]> {
+    const { data } = await this.supabase
+      .from('convites').select('*')
+      .eq('condominio_id', condId)
+      .is('usado_em', null).is('cancelado_em', null)
+      .order('created_at', { ascending: false });
+    return (data as ConviteMorador[]) ?? [];
+  }
+
+  async renovarConvite(id: string) {
+    return this.supabase.rpc('renovar_convite', { p_id: id });
+  }
+
+  async cancelarConvite(id: string) {
+    return this.supabase.rpc('cancelar_convite', { p_id: id });
+  }
+
+  async definirAcessoMorador(id: string, ativo: boolean) {
+    return this.supabase.rpc('definir_acesso_morador', { p_id: id, p_ativo: ativo });
+  }
+
+  async getConviteInfo(token: string): Promise<ConviteInfo | null> {
+    const { data } = await this.supabase.rpc('get_convite', { p_token: token });
+    const lista = (data as ConviteInfo[]) ?? [];
+    return lista[0] ?? null;
+  }
+
+  async signUpPorConvite(token: string, email: string, senha: string) {
+    return this.supabase.auth.signUp({
+      email,
+      password: senha,
+      options: { data: { convite: token } },
+    });
   }
 }

@@ -20,7 +20,7 @@
     <div class="field" [class.error]="erro().tipo">
       <label for="tipo">Tipo de Usuário</label>
       <div class="input-wrap">
-        <select id="tipo" name="tipo" [(ngModel)]="tipo">
+        <select id="tipo" name="tipo" [(ngModel)]="tipo" [disabled]="tipoBloqueado()">
           <option value="" disabled>Selecione</option>
           <option value="condomino">Condômino</option>
           <option value="sindico">Síndico</option>
@@ -38,7 +38,7 @@
         <input [type]="mostrarSenha() ? 'text' : 'password'" id="senha" name="senha"
                placeholder="Sua senha" autocomplete="current-password"
                [(ngModel)]="senha" style="padding-right:40px;">
-        <button type="button" class="toggle-pass" (click)="mostrarSenha.set(!mostrarSenha())">
+        <button type="button" class="toggle-pass" (click)="mostrarSenha.set(!mostrarSenha())" aria-label="Mostrar ou ocultar a senha">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
         </button>
       </div>
@@ -46,14 +46,11 @@
       <div class="field-error-msg">Informe sua senha.</div>
     </div>
 
-    <button type="submit" class="btn btn-primary" style="margin-top:8px;">Entrar</button>
+    <button type="submit" class="btn btn-primary" style="margin-top:8px;" [disabled]="entrando()">Entrar</button>
   </form>
 
-  <p class="auth-footer">Não tem conta? <a routerLink="/criar-conta">Cadastre-se</a></p>
-
-  <div class="demo-box">
-    <strong>Contas de demonstração</strong><br>
-    Síndico — CPF 111.111.111-11 · senha 123456<br>
-    Condômino — CPF 222.222.222-22 · senha 123456
+  <div class="role-note" style="margin-top:20px;">
+    Moradores recebem um link de convite do síndico para criar o acesso.
   </div>
+  <p class="auth-footer">É síndico e ainda não tem conta? <a routerLink="/criar-conta">Criar conta</a></p>
 </div>

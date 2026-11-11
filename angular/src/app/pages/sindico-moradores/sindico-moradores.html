@@ -1,25 +1,135 @@
-<div class="screen no-nav">
-  <div class="topbar">
-    <a class="back-btn" routerLink="/sindico/inicio">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-    </a>
-    <h1>Moradores ({{ moradores().length }})</h1>
-  </div>
+<div class="screen">
+  @if (modo() === 'lista') {
+    <div class="topbar">
+      <a class="back-btn" routerLink="/sindico/inicio">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <h1>Moradores</h1>
+      <button class="topbar-sub btn-sm btn-ghost btn" type="button" style="width:auto;" (click)="novo()">+ Convidar</button>
+    </div>
 
-  <div class="list">
-    @for (m of moradores(); track m.id) {
-      <div class="req-card" style="display:flex;align-items:center;gap:12px;">
-        <div class="avatar">{{ iniciais(m.nome) }}</div>
-        <div>
-          <h3>{{ m.nome }}</h3>
-          <p class="meta">Apto {{ m.apto }} · {{ m.email }}</p>
-        </div>
-      </div>
-    } @empty {
-      <div class="empty-state">
-        <h3>Nenhum morador cadastrado</h3>
-        <p>Os moradores que escolherem o seu condomínio no cadastro aparecem aqui.</p>
+    @if (convites().length > 0) {
+      <div class="section-title">Convites pendentes ({{ convites().length }})</div>
+      <div class="list" style="margin-bottom:20px;">
+        @for (c of convites(); track c.id) {
+          <div class="req-card">
+            <div class="badge-row">
+              <span class="badge" [class]="expirado(c) ? 'badge-red' : 'badge-amber'">{{ expirado(c) ? 'Expirado' : 'Aguardando' }}</span>
+            </div>
+            <h3>{{ c.nome }}</h3>
+            <p class="meta">Apto {{ c.apto }} · {{ c.email }}</p>
+            <p class="meta">{{ expirado(c) ? 'Expirou em' : 'Vale até' }} {{ dataHora(c.expira_em) }}</p>
+
+            @if (confirmandoId() === c.id) {
+              <p class="meta" style="margin-top:10px;">Cancelar o convite de {{ c.nome }}? O link deixa de funcionar.</p>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button class="btn btn-danger-ghost btn-sm" type="button" style="width:auto;" (click)="cancelarConvite(c)">Sim, cancelar</button>
+                <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="confirmandoId.set(null)">Voltar</button>
+              </div>
+            } @else {
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+                @if (!expirado(c)) {
+                  <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="copiar(link(c.token))">Copiar link</button>
+                  <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="whatsapp(c.nome, link(c.token))">WhatsApp</button>
+                }
+                <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="renovar(c)">Gerar novo link</button>
+                <button class="btn btn-danger-ghost btn-sm" type="button" style="width:auto;" (click)="pedirConfirmacao(c.id)">Cancelar</button>
+              </div>
+            }
+          </div>
+        }
       </div>
     }
-  </div>
+
+    <div class="section-title">Moradores ({{ moradores().length }})</div>
+    <div class="list">
+      @for (m of moradores(); track m.id) {
+        <div class="req-card">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="avatar">{{ iniciais(m.nome) }}</div>
+            <div>
+              <h3>{{ m.nome }}</h3>
+              <p class="meta">Apto {{ m.apto }} · {{ m.email }}</p>
+            </div>
+          </div>
+          <div class="badge-row" style="margin-top:10px;">
+            <span class="badge" [class]="m.ativo ? 'badge-green' : 'badge-gray'">{{ m.ativo ? 'Acesso ativo' : 'Acesso desativado' }}</span>
+          </div>
+
+          @if (confirmandoId() === m.id) {
+            <p class="meta" style="margin-top:10px;">
+              {{ m.ativo ? 'Desativar o acesso de ' + m.nome + '? Ele não conseguirá mais entrar.' : 'Reativar o acesso de ' + m.nome + '?' }}
+            </p>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn btn-danger-ghost btn-sm" type="button" style="width:auto;" (click)="alternarAcesso(m)">Confirmar</button>
+              <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="confirmandoId.set(null)">Voltar</button>
+            </div>
+          } @else {
+            <button class="btn btn-ghost btn-sm" type="button" style="width:auto;margin-top:10px;" (click)="pedirConfirmacao(m.id)">
+              {{ m.ativo ? 'Desativar acesso' : 'Reativar acesso' }}
+            </button>
+          }
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <h3>Nenhum morador ainda</h3>
+          <p>Toque em "+ Convidar" para criar o acesso do primeiro morador.</p>
+        </div>
+      }
+    </div>
+  } @else if (modo() === 'form') {
+    <div class="topbar">
+      <button class="back-btn" type="button" (click)="voltar()" aria-label="Voltar">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1>Convidar morador</h1>
+    </div>
+
+    <div class="role-note">
+      Você cadastra os dados e o morador define a própria senha pelo link. A senha não passa pelo síndico.
+    </div>
+
+    <form (ngSubmit)="criar()">
+      <div class="field">
+        <label for="nome">Nome completo</label>
+        <div class="input-wrap"><input type="text" id="nome" name="nome" [(ngModel)]="nome" placeholder="Ex: Carlos Ferreira"></div>
+      </div>
+      <div class="field">
+        <label for="cpf">CPF</label>
+        <div class="input-wrap"><input type="text" id="cpf" name="cpf" maxlength="14" placeholder="000.000.000-00" [value]="cpf" (input)="onCpf($event)"></div>
+      </div>
+      <div class="field">
+        <label for="email">E-mail</label>
+        <div class="input-wrap"><input type="email" id="email" name="email" [(ngModel)]="email" placeholder="Ex: carlos@email.com"></div>
+      </div>
+      <div class="field">
+        <label for="apto">Unidade / Apto</label>
+        <div class="input-wrap"><input type="text" id="apto" name="apto" [(ngModel)]="apto" placeholder="Ex: 142B"></div>
+      </div>
+      <button type="submit" class="btn btn-primary" [disabled]="salvando()">Criar convite</button>
+    </form>
+  } @else {
+    <div class="topbar">
+      <button class="back-btn" type="button" (click)="voltar()" aria-label="Voltar">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1>Convite criado</h1>
+    </div>
+
+    <div class="detail-card">
+      <div class="section-title" style="margin-bottom:10px;">Link para {{ nomeAtual }}</div>
+      <p class="meta" style="margin-bottom:10px;">Envie ao morador. O link vale por 7 dias e só pode ser usado uma vez.</p>
+      <div class="field" style="margin-bottom:12px;">
+        <div class="input-wrap">
+          <input type="text" readonly [value]="linkAtual()" (focus)="$any($event.target).select()">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" type="button" style="width:auto;" (click)="copiar(linkAtual())">Copiar link</button>
+        <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="whatsapp(nomeAtual, linkAtual())">Enviar por WhatsApp</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost" type="button" (click)="voltar()">Voltar à lista</button>
+  }
 </div>
+<app-bottom-nav-sindico active="inicio" />

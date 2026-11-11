@@ -1,0 +1,50 @@
+<div class="screen no-nav">
+  <div class="auth-header">
+    <div class="logo">
+      <img src="Woonstel.png" alt="Logo" width="150" height="70">
+    </div>
+    <h1>Defina sua senha</h1>
+  </div>
+
+  @if (carregado()) {
+    @if (info(); as i) {
+      <div class="role-note">
+        Olá, <strong>{{ i.nome }}</strong>! O síndico de <strong>{{ i.condominio }}</strong> criou seu acesso
+        (unidade {{ i.apto }}). Crie uma senha só sua: ninguém mais a conhece.
+      </div>
+
+      <form (ngSubmit)="criarSenha()">
+        <div class="field">
+          <label for="senha">Nova senha</label>
+          <div class="input-wrap">
+            <input [type]="mostrarSenha() ? 'text' : 'password'" id="senha" name="senha"
+                   [(ngModel)]="senha" autocomplete="new-password" placeholder="Crie uma senha forte"
+                   style="padding-right:40px;">
+            <button type="button" class="toggle-pass" (click)="mostrarSenha.set(!mostrarSenha())" aria-label="Mostrar ou ocultar a senha">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <app-regras-senha [senha]="senha" />
+
+        <div class="field" [class.error]="erroConfirmar()">
+          <label for="confirmar">Confirmar senha</label>
+          <div class="input-wrap">
+            <input [type]="mostrarSenha() ? 'text' : 'password'" id="confirmar" name="confirmar"
+                   [(ngModel)]="confirmar" autocomplete="new-password" placeholder="Repita a senha">
+          </div>
+          <div class="field-error-msg">As senhas não coincidem.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="salvando()">Criar minha senha</button>
+      </form>
+    } @else {
+      <div class="empty-state">
+        <h3>Convite inválido ou expirado</h3>
+        <p>Peça ao síndico um novo link de convite.</p>
+        <a class="btn btn-ghost btn-sm" routerLink="/" style="width:auto;display:inline-flex;margin-top:12px;">Ir para o login</a>
+      </div>
+    }
+  }
+</div>
