@@ -19,8 +19,14 @@
         <div class="detail-title">{{ sol.titulo }}</div>
         <div class="kv-row"><span class="k">Morador</span><span class="v">{{ sol.morador_nome }}</span></div>
         <div class="kv-row"><span class="k">Unidade</span><span class="v">{{ sol.apto }}</span></div>
+        @if (recusadasDoMorador() > 0) {
+          <div class="kv-row"><span class="k">Solicitações recusadas</span><span class="v">{{ recusadasDoMorador() }}</span></div>
+        }
         <div class="kv-row"><span class="k">Localização</span><span class="v">{{ sol.localizacao }}</span></div>
         <div class="kv-row"><span class="k">Data de Abertura</span><span class="v">{{ data(sol.created_at) }}</span></div>
+        @if (sol.status === 'Recusada') {
+          <p class="meta" style="margin-top:8px;">Recusada: {{ sol.motivo_recusa }}</p>
+        }
       </div>
 
       <div class="detail-card">
@@ -37,6 +43,11 @@
             <p class="meta">Não foi possível carregar a foto.</p>
           } @else {
             <p class="meta">Carregando foto...</p>
+          }
+          @if (sol.foto_origem === 'camera') {
+            <p class="meta" style="margin-top:8px;">Origem: tirada na câmera do aparelho, pelo app.</p>
+          } @else if (sol.foto_origem === 'galeria') {
+            <p class="meta" style="margin-top:8px;">Origem: escolhida da galeria do aparelho.</p>
           }
         </div>
       }
@@ -71,7 +82,7 @@
           </div>
           <button class="btn btn-primary" type="button" [disabled]="enviando()" (click)="enviarResposta()">Enviar resposta</button>
         } @else {
-          <p class="meta">Esta solicitação foi resolvida. Não é possível enviar novas mensagens.</p>
+          <p class="meta">Esta solicitação foi {{ sol.status === 'Recusada' ? 'recusada' : 'resolvida' }}. Não é possível enviar novas mensagens.</p>
         }
       </div>
 
@@ -101,10 +112,24 @@
           Colocar em andamento
         </button>
       }
-      @if (sol.status !== 'Resolvida') {
+      @if (sol.status === 'Pendente' || sol.status === 'Em andamento') {
         <button class="btn btn-ghost" type="button" style="margin-top:10px;" [disabled]="salvando()" (click)="mudarStatus('Resolvida')">
           Marcar como resolvida
         </button>
+      }
+      @if (sol.status === 'Pendente') {
+        @if (recusando()) {
+          <div class="detail-card" style="margin-top:10px;">
+            <app-cancelar-reserva [motivos]="motivosRecusa" [salvando]="salvando()"
+                                  titulo="Por que você está recusando esta solicitação?"
+                                  rotuloConfirmar="Confirmar recusa"
+                                  (confirmar)="recusar($event)" (voltar)="recusando.set(false)" />
+          </div>
+        } @else {
+          <button class="btn btn-danger-ghost" type="button" style="margin-top:10px;" (click)="recusando.set(true)">
+            Recusar solicitação
+          </button>
+        }
       }
     } @else {
       <div class="empty-state"><h3>Solicitação não encontrada</h3></div>

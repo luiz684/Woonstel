@@ -17,9 +17,13 @@
           <span class="badge" [class]="badge[sol.status]">{{ sol.status }}</span>
         </div>
         <div class="detail-title">{{ sol.titulo }}</div>
+                @if (sol.status === 'Recusada') {
+          <p class="meta" style="margin-bottom:8px;">Recusada pelo síndico: {{ sol.motivo_recusa }}</p>
+        }
         <div class="kv-row"><span class="k">Localização</span><span class="v">{{ sol.localizacao }}</span></div>
         <div class="kv-row"><span class="k">Data de Abertura</span><span class="v">{{ data(sol.created_at) }}</span></div>
       </div>
+              
 
       <div class="detail-card">
         <div class="section-title" style="margin-bottom:10px;">Descrição</div>

@@ -2,6 +2,8 @@
   <router-outlet />
 </div>
 
-@if (toast.message(); as msg) {
-  <div class="toast show">{{ msg }}</div>
-}
+<div role="status" aria-live="polite">
+  @if (toast.message(); as msg) {
+    <div class="toast show">{{ msg }}</div>
+  }
+</div>

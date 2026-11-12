@@ -32,6 +32,12 @@ export class SindicoMoradores implements OnInit {
   cpf = '';
   email = '';
   apto = '';
+  recusadas = signal<Record<string, number>>({});
+  notas = signal<Record<string, string>>({});
+  editandoNotaId = signal<string | null>(null);
+  salvandoNota = signal(false);
+  notaTexto = '';
+  private sindicoId = '';
 
   iniciais = initials;
   dataHora = dataHoraBR;
@@ -41,17 +47,22 @@ export class SindicoMoradores implements OnInit {
     if (!ctx) { this.router.navigate(['/']); return; }
     if (!ctx.cond) { this.router.navigate(['/sindico/cadastrar-condominio']); return; }
     this.cond = ctx.cond;
+    this.sindicoId = ctx.perfil.id;
     await this.carregar();
   }
 
-  private async carregar() {
+    private async carregar() {
     if (!this.cond) return;
-    const [m, c] = await Promise.all([
+    const [m, c, r, n] = await Promise.all([
       this.store.getMoradores(this.cond.id),
       this.store.getConvites(this.cond.id),
+      this.store.getRecusadasPorMorador(this.cond.id),
+      this.store.getNotas(this.cond.id),
     ]);
     this.moradores.set(m);
     this.convites.set(c);
+    this.recusadas.set(r);
+    this.notas.set(n);
   }
 
   link(token: string): string {
@@ -143,6 +154,27 @@ export class SindicoMoradores implements OnInit {
     if (error) { this.toast.show(error.message); return; }
     this.confirmandoId.set(null);
     this.toast.show(m.ativo ? 'Acesso desativado.' : 'Acesso reativado.');
+    await this.carregar();
+  }
+
+    abrirNota(m: Profile) {
+    this.confirmandoId.set(null);
+    this.notaTexto = this.notas()[m.id] ?? '';
+    this.editandoNotaId.set(m.id);
+  }
+
+  fecharNota() {
+    this.editandoNotaId.set(null);
+  }
+
+  async salvarNota(m: Profile) {
+    if (!this.cond) return;
+    this.salvandoNota.set(true);
+    const { error } = await this.store.salvarNota(this.cond.id, m.id, this.sindicoId, this.notaTexto);
+    this.salvandoNota.set(false);
+    if (error) { this.toast.show('Não foi possível salvar a anotação: ' + error.message); return; }
+    this.editandoNotaId.set(null);
+    this.toast.show('Anotação salva.');
     await this.carregar();
   }
 }

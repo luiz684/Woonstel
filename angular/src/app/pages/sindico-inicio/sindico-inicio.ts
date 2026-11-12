@@ -1,8 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CondominioCompleto, Profile, SolicitacaoDetalhe, StoreService } from '../../services/store';
-import { BADGE_PRIO, BADGE_STATUS, initials, primeiroNome } from '../../utils/format';
+import { BADGE_PRIO, BADGE_STATUS, initials, primeiroNome, solicitacaoAberta } from '../../utils/format';
 import { BottomNavSindico } from '../../components/bottom-nav-sindico/bottom-nav-sindico';
+import { Avatar } from '../../components/avatar/avatar';
 
 interface Card {
   rota: string;
@@ -13,7 +14,7 @@ interface Card {
 
 @Component({
   selector: 'app-sindico-inicio',
-  imports: [RouterLink, BottomNavSindico],
+  imports: [RouterLink, BottomNavSindico, Avatar],
   templateUrl: './sindico-inicio.html',
   styleUrl: './sindico-inicio.css',
 })
@@ -60,7 +61,7 @@ export class SindicoInicio implements OnInit {
       // Só as abertas: prioridade mais alta primeiro; na mesma prioridade, as mais antigas
       const peso: Record<string, number> = { Alta: 0, 'Média': 1, Baixa: 2 };
       const abertas = sols
-        .filter(s => s.status !== 'Resolvida')
+       .filter(s => solicitacaoAberta(s.status))
         .sort((a, b) =>
           (peso[a.prioridade ?? ''] ?? 3) - (peso[b.prioridade ?? ''] ?? 3) ||
           new Date(a.created_at).getTime() - new Date(b.created_at).getTime());

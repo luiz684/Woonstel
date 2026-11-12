@@ -50,11 +50,36 @@
             <div>
               <h3>{{ m.nome }}</h3>
               <p class="meta">Apto {{ m.apto }} · {{ m.email }}</p>
+                @if (m.telefone) { <p class="meta">Tel. {{ m.telefone }}</p> }
             </div>
           </div>
           <div class="badge-row" style="margin-top:10px;">
             <span class="badge" [class]="m.ativo ? 'badge-green' : 'badge-gray'">{{ m.ativo ? 'Acesso ativo' : 'Acesso desativado' }}</span>
           </div>
+
+          @if (recusadas()[m.id] > 0) {
+            <p class="meta" style="margin-top:8px;">
+              Solicitações recusadas: <strong>{{ recusadas()[m.id] }}</strong>
+            </p>
+          }
+
+          @if (editandoNotaId() === m.id) {
+            <div class="field" style="margin:10px 0 8px;">
+              <textarea [(ngModel)]="notaTexto" name="nota" maxlength="500"
+                        placeholder="Anotação privada (só você vê)"></textarea>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-primary btn-sm" type="button" style="width:auto;" [disabled]="salvandoNota()" (click)="salvarNota(m)">Salvar</button>
+              <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="fecharNota()">Cancelar</button>
+            </div>
+          } @else {
+            @if (notas()[m.id]) {
+              <p class="meta" style="margin-top:8px;">Anotação: {{ notas()[m.id] }}</p>
+            }
+            <button class="btn btn-ghost btn-sm" type="button" style="width:auto;margin-top:8px;" (click)="abrirNota(m)">
+              {{ notas()[m.id] ? 'Editar anotação' : 'Adicionar anotação' }}
+            </button>
+          }
 
           @if (confirmandoId() === m.id) {
             <p class="meta" style="margin-top:10px;">
@@ -65,7 +90,7 @@
               <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="confirmandoId.set(null)">Voltar</button>
             </div>
           } @else {
-            <button class="btn btn-ghost btn-sm" type="button" style="width:auto;margin-top:10px;" (click)="pedirConfirmacao(m.id)">
+            <button class="btn btn-ghost btn-sm" type="button" style="width:auto;margin-top:8px;" (click)="pedirConfirmacao(m.id)">
               {{ m.ativo ? 'Desativar acesso' : 'Reativar acesso' }}
             </button>
           }

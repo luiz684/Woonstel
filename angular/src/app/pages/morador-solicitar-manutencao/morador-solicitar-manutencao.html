@@ -10,7 +10,6 @@
     <div class="field">
       <label for="titulo">Título da Solicitação</label>
       <div class="input-wrap">
-        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
         <input type="text" id="titulo" name="titulo" [(ngModel)]="titulo" placeholder="Ex: Infiltração na parede da garagem">
       </div>
     </div>
@@ -18,13 +17,10 @@
     <div class="field">
       <label for="categoria">Categoria</label>
       <div class="input-wrap">
-        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
         <select id="categoria" name="categoria" [(ngModel)]="categoria">
-          <option value="Elétrica">Elétrica</option>
-          <option value="Hidráulica">Hidráulica</option>
-          <option value="Estrutural">Estrutural</option>
-          <option value="Limpeza">Limpeza</option>
-          <option value="Outros">Outros</option>
+          @for (c of categorias; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
         </select>
         <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
@@ -38,7 +34,6 @@
     <div class="field">
       <label for="local">Localização / Bloco</label>
       <div class="input-wrap">
-        <svg class="icon-left" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
         <input type="text" id="local" name="local" [(ngModel)]="local" placeholder="Ex: Garagem G2, vaga 44">
       </div>
     </div>
@@ -53,14 +48,30 @@
     </div>
 
     <div class="field">
-      <label>Foto (opcional)</label>
-      <label class="upload-box" for="fotoInput" style="cursor:pointer;">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>
-        <span>{{ nomeFoto() || 'Adicionar foto do problema' }}</span>
-      </label>
-      <input type="file" id="fotoInput" accept="image/*" style="display:none;" (change)="onFoto($event)">
+      <label>Foto do problema {{ obrigatoria ? '(obrigatória)' : '(opcional)' }}</label>
+
+      @if (previewUrl(); as url) {
+        <img [src]="url" alt="Foto selecionada" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;margin-bottom:10px;">
+        <button type="button" class="btn btn-ghost btn-sm" style="width:auto;margin-bottom:10px;" (click)="removerFoto()">Remover foto</button>
+      }
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" [disabled]="processandoFoto()" (click)="camera.click()">Tirar foto</button>
+        <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" [disabled]="processandoFoto()" (click)="galeria.click()">Escolher da galeria</button>
+      </div>
+      <input #camera type="file" accept="image/*" capture="environment" style="display:none;" (change)="onFoto($event, 'camera')">
+      <input #galeria type="file" accept="image/*" style="display:none;" (change)="onFoto($event, 'galeria')">
+
+      @if (processandoFoto()) {
+        <p class="meta" style="margin-top:6px;">Preparando a foto...</p>
+      } @else if (obrigatoria) {
+        <p class="meta" style="margin-top:6px;">Elétrica, hidráulica e estrutural exigem uma foto. Prefira tirá-la no local do problema.</p>
+      } @else {
+        <p class="meta" style="margin-top:6px;">Ajuda o síndico a entender o problema.</p>
+      }
     </div>
 
-    <button type="submit" class="btn btn-primary" [disabled]="salvando()">Registrar solicitação</button>
+    <button type="submit" class="btn btn-primary" [disabled]="salvando() || processandoFoto()">Registrar solicitação</button>
   </form>
 </div>
+<app-bottom-nav-morador active="ocorrencias" />

@@ -15,6 +15,9 @@ export interface Profile {
   apto: string | null;
   avisos_lidos_ate: string | null;
   ativo: boolean;
+  telefone: string | null;
+  foto_path: string | null;
+  preferencias: Preferencias | null;
 }
 
 export interface Condominio {
@@ -93,13 +96,15 @@ export interface SolicitacaoDetalhe {
   titulo: string;
   categoria: string | null;
   prioridade: 'Baixa' | 'Média' | 'Alta' | null;
-  status: 'Pendente' | 'Em andamento' | 'Resolvida';
+  status: 'Pendente' | 'Em andamento' | 'Resolvida' | 'Recusada';
   localizacao: string | null;
   descricao: string | null;
   foto: boolean;
   foto_path: string | null;
   historico: HistoricoItem[];
   created_at: string;
+  motivo_recusa: string | null;
+  foto_origem: 'camera' | 'galeria' | null;
 }
 
 export type Solicitacao = Pick<
@@ -116,7 +121,6 @@ export interface Area {
   motivo_indisponibilidade: string | null;
   duracao_min: number | null;
 }
-
 
 
 export interface ReservaAtiva {
@@ -146,6 +150,10 @@ export interface ConviteInfo {
   tipo: string;
   condominio: string;
   apto: string | null;
+}
+
+export interface Preferencias {
+  notificacoes?: Partial<Record<'status' | 'comentario' | 'reserva_cancelada' | 'aviso', boolean>>;
 }
 
 
@@ -305,9 +313,9 @@ export class StoreService {
     return (data as SolicitacaoDetalhe) ?? null;
   }
 
-  async criarSolicitacao(p: Profile, d: {
+   async criarSolicitacao(p: Profile, d: {
     titulo: string; categoria: string; descricao: string; localizacao: string;
-    prioridade: string; fotoPath: string | null; dataLabel: string;
+    prioridade: string; fotoPath: string | null; fotoOrigem: 'camera' | 'galeria' | null; dataLabel: string;
   }) {
     return this.supabase.from('solicitacoes').insert({
       condominio_id: p.condominio_id,
@@ -321,10 +329,11 @@ export class StoreService {
       prioridade: d.prioridade,
       foto: !!d.fotoPath,
       foto_path: d.fotoPath,
+      foto_origem: d.fotoPath ? d.fotoOrigem : null,
       status: 'Pendente',
       historico: [{ status: 'Solicitação registrada', data: d.dataLabel, done: true }],
     });
-  }
+  } 
 
   async atualizarStatusSolicitacao(s: SolicitacaoDetalhe, novo: 'Em andamento' | 'Resolvida') {
     const texto = novo === 'Em andamento' ? 'Solicitação validada pela adm' : 'Serviço concluído';
@@ -590,5 +599,121 @@ export class StoreService {
       password: senha,
       options: { data: { convite: token } },
     });
+  }
+
+    async recusarSolicitacao(id: string, motivo: string) {
+    return this.supabase.rpc('recusar_solicitacao', { p_id: id, p_motivo: motivo });
+  }
+
+  async getRecusadasPorMorador(condId: string): Promise<Record<string, number>> {
+    const { data } = await this.supabase.rpc('contagem_recusadas', { p_cond: condId });
+    const mapa: Record<string, number> = {};
+    for (const r of (data as { morador_id: string; total: number }[]) ?? []) {
+      mapa[r.morador_id] = Number(r.total);
+    }
+    return mapa;
+  }
+
+  async contarRecusadasDoMorador(moradorId: string): Promise<number> {
+    const { count } = await this.supabase
+      .from('solicitacoes').select('id', { count: 'exact', head: true })
+      .eq('morador_id', moradorId).eq('status', 'Recusada');
+    return count ?? 0;
+  }
+
+  async getNotas(condId: string): Promise<Record<string, string>> {
+    const { data } = await this.supabase
+      .from('notas_morador').select('morador_id, nota').eq('condominio_id', condId);
+    const mapa: Record<string, string> = {};
+    for (const n of (data as { morador_id: string; nota: string }[]) ?? []) mapa[n.morador_id] = n.nota;
+    return mapa;
+  }
+
+  async salvarNota(condId: string, moradorId: string, autorId: string, texto: string) {
+    const nota = texto.trim();
+    if (!nota) {
+      return this.supabase.from('notas_morador').delete().eq('morador_id', moradorId);
+    }
+    return this.supabase.from('notas_morador').upsert({
+      morador_id: moradorId,
+      condominio_id: condId,
+      nota,
+      atualizado_em: new Date().toISOString(),
+      atualizado_por: autorId,
+    }, { onConflict: 'morador_id' });
+  }
+
+    private avatarCache = new Map<string, { url: string; ate: number }>();
+
+  async getAvatarUrl(path: string | null): Promise<string | null> {
+    if (!path) return null;
+    const c = this.avatarCache.get(path);
+    if (c && c.ate > Date.now()) return c.url;
+    const { data, error } = await this.supabase.storage.from('avatares').createSignedUrl(path, 3600);
+    if (error || !data) {
+      console.error('Erro ao gerar URL do avatar:', error?.message);
+      return null;
+    }
+    this.avatarCache.set(path, { url: data.signedUrl, ate: Date.now() + 50 * 60 * 1000 });
+    return data.signedUrl;
+  }
+
+  async enviarAvatar(p: Profile, file: File): Promise<string | null> {
+    const novo = `${p.id}/avatar-${Date.now()}.jpg`;
+    const up = await this.supabase.storage.from('avatares').upload(novo, file, { contentType: file.type });
+    if (up.error) return 'Não foi possível enviar a foto: ' + up.error.message;
+
+    const { data, error } = await this.supabase
+      .from('profiles').update({ foto_path: novo }).eq('id', p.id).select('id');
+    if (error || !data || data.length === 0) {
+      await this.supabase.storage.from('avatares').remove([novo]);
+      return 'Não foi possível salvar a foto no perfil.';
+    }
+    if (p.foto_path) await this.supabase.storage.from('avatares').remove([p.foto_path]);
+    return null;
+  }
+
+  async removerAvatar(p: Profile): Promise<string | null> {
+    if (!p.foto_path) return null;
+    const { data, error } = await this.supabase
+      .from('profiles').update({ foto_path: null }).eq('id', p.id).select('id');
+    if (error || !data || data.length === 0) return 'Não foi possível remover a foto.';
+    await this.supabase.storage.from('avatares').remove([p.foto_path]);
+    return null;
+  }
+
+  async atualizarPerfil(id: string, d: { nome: string; telefone: string | null }) {
+    return this.supabase.from('profiles').update(d).eq('id', id).select('id');
+  }
+
+  async salvarPreferencias(id: string, prefs: Preferencias) {
+    return this.supabase.from('profiles').update({ preferencias: prefs }).eq('id', id).select('id');
+  }
+
+  async alterarSenha(email: string, atual: string, nova: string): Promise<string | null> {
+    const { error: e1 } = await this.supabase.auth.signInWithPassword({ email, password: atual });
+    if (e1) return 'A senha atual está incorreta.';
+    const { error: e2 } = await this.supabase.auth.updateUser({ password: nova });
+    if (e2) {
+      return e2.message.toLowerCase().includes('different')
+        ? 'A nova senha precisa ser diferente da atual.'
+        : 'Não foi possível alterar a senha: ' + e2.message;
+    }
+    return null;
+  }
+
+  async exportarDados(p: Profile): Promise<Record<string, unknown>> {
+    const [sols, reservas, notifs] = await Promise.all([
+      this.supabase.from('solicitacoes').select('*').eq('morador_id', p.id),
+      this.supabase.from('reservas').select('*').eq('morador_id', p.id),
+      this.supabase.from('notificacoes').select('*').eq('usuario_id', p.id),
+    ]);
+    return {
+      gerado_em: new Date().toISOString(),
+      perfil: p,
+      solicitacoes: sols.data ?? [],
+      reservas: reservas.data ?? [],
+      notificacoes: notifs.data ?? [],
+    };
   }
 }

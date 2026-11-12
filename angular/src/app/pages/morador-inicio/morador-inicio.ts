@@ -1,14 +1,15 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Aviso, CondominioCompleto, Profile, StoreService } from '../../services/store';
-import { formatDateBR, initials, primeiroNome } from '../../utils/format';
+import { formatDateBR, initials, primeiroNome, solicitacaoAberta } from '../../utils/format';
 import { BottomNavMorador } from '../../components/bottom-nav-morador/bottom-nav-morador';
+import { Avatar } from '../../components/avatar/avatar';
 
 interface Card { rota: string; rotulo: string; icone: string; }
 
 @Component({
   selector: 'app-morador-inicio',
-  imports: [RouterLink, BottomNavMorador],
+  imports: [RouterLink, BottomNavMorador, Avatar],
   templateUrl: './morador-inicio.html',
   styleUrl: './morador-inicio.css',
 })
@@ -50,7 +51,7 @@ export class MoradorInicio implements OnInit {
       this.store.countNotificacoesNaoLidas(),
     ]);
     this.cond.set(cond);
-    this.pendentes.set(sols.filter(s => s.status !== 'Resolvida').length);
+    this.pendentes.set(sols.filter(s => solicitacaoAberta(s.status)).length);
     this.avisos.set(avisos.slice(0, 3));
     this.naoLidos.set(naoLidos);
     this.carregado.set(true);

@@ -1,0 +1,119 @@
+<div class="screen">
+  <div class="topbar">
+    <a class="back-btn" [routerLink]="voltarRota">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <h1>Configurações</h1>
+  </div>
+
+  <div class="detail-card">
+    <div class="section-title">Aparência</div>
+    <p class="meta" style="margin-bottom:8px;">Tema</p>
+    <div class="chip-row wrap">
+      @for (t of temas; track t.valor) {
+        <div class="chip" [class.active]="a().tema === t.valor" (click)="mudarTema(t.valor)">{{ t.rotulo }}</div>
+      }
+    </div>
+  </div>
+
+  <div class="detail-card">
+    <div class="section-title">Acessibilidade</div>
+
+    <p class="meta" style="margin-bottom:8px;">Tamanho da letra</p>
+    <div class="chip-row wrap" style="margin-bottom:16px;">
+      @for (f of fontes; track f.valor) {
+        <div class="chip" [class.active]="a().fonte === f.valor" (click)="mudarFonte(f.valor)">{{ f.rotulo }}</div>
+      }
+    </div>
+
+    <label class="check-row">
+      <input type="checkbox" [checked]="a().contraste" (change)="mudarContraste($event)">
+      Alto contraste
+    </label>
+    <p class="meta" style="margin:-6px 0 14px 26px;">Reforça textos e bordas para facilitar a leitura.</p>
+
+    <label class="check-row">
+      <input type="checkbox" [checked]="a().semMovimento" (change)="mudarMovimento($event)">
+      Reduzir animações
+    </label>
+    <p class="meta" style="margin:-6px 0 14px 26px;">Desliga transições e movimentos da tela.</p>
+
+    <label class="check-row">
+      <input type="checkbox" [checked]="a().vlibras" (change)="mudarVlibras($event)">
+      Tradutor de Libras (VLibras)
+    </label>
+    <p class="meta" style="margin:-6px 0 0 26px;">Mostra o botão do VLibras, do Governo Federal. Precisa de internet. Ao desligar, a página recarrega.</p>
+  </div>
+
+  @if (tipo === 'condomino') {
+    <div class="detail-card">
+      <div class="section-title">Notificações</div>
+      @for (n of notificacoes; track n.chave) {
+        <label class="check-row">
+          <input type="checkbox" [checked]="notifAtiva(n.chave)" (change)="alternarNotif(n.chave, $event)">
+          {{ n.rotulo }}
+        </label>
+      }
+      <p class="meta">Vale para as próximas notificações. As que você já recebeu continuam na caixa.</p>
+    </div>
+  }
+
+  <div class="detail-card">
+    <div class="section-title">Conta e segurança</div>
+    @if (!senhaAberta()) {
+      <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="abrirSenha()">Alterar senha</button>
+      <p class="meta" style="margin-top:8px;">A troca de e-mail ainda não está disponível.</p>
+    } @else {
+      <form (ngSubmit)="alterarSenha()">
+        <div class="field">
+          <label for="atual">Senha atual</label>
+          <div class="input-wrap">
+            <input [type]="mostrarSenhas() ? 'text' : 'password'" id="atual" name="atual" [(ngModel)]="atual" autocomplete="current-password">
+          </div>
+        </div>
+        <div class="field">
+          <label for="nova">Nova senha</label>
+          <div class="input-wrap">
+            <input [type]="mostrarSenhas() ? 'text' : 'password'" id="nova" name="nova" [(ngModel)]="nova" autocomplete="new-password">
+          </div>
+        </div>
+        <app-regras-senha [senha]="nova" />
+        <div class="field" [class.error]="erroConfirmar()">
+          <label for="confirmar">Confirmar nova senha</label>
+          <div class="input-wrap">
+            <input [type]="mostrarSenhas() ? 'text' : 'password'" id="confirmar" name="confirmar" [(ngModel)]="confirmar" autocomplete="new-password">
+          </div>
+          <div class="field-error-msg">As senhas não coincidem.</div>
+        </div>
+        <label class="check-row">
+          <input type="checkbox" [checked]="mostrarSenhas()" (change)="mostrarSenhas.set(!mostrarSenhas())">
+          Mostrar senhas
+        </label>
+        <div style="display:flex;gap:8px;">
+          <button type="submit" class="btn btn-primary btn-sm" style="width:auto;" [disabled]="salvandoSenha()">Salvar senha</button>
+          <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" (click)="senhaAberta.set(false)">Cancelar</button>
+        </div>
+      </form>
+    }
+  </div>
+
+  <div class="detail-card">
+    <div class="section-title">Privacidade e dados</div>
+    <p class="meta" style="margin-bottom:10px;">Baixe uma cópia dos dados que o Woonstel guarda sobre você: perfil, solicitações, reservas e notificações.</p>
+    <button class="btn btn-ghost btn-sm" type="button" style="width:auto;" (click)="exportar()">Baixar meus dados</button>
+    <p class="meta" style="margin-top:10px;">
+      {{ tipo === 'condomino' ? 'Para excluir seu acesso, peça ao síndico do condomínio.' : 'A exclusão da conta de síndico ainda não está disponível no app.' }}
+    </p>
+  </div>
+
+  <div class="detail-card">
+    <div class="section-title">Sobre</div>
+    <p class="meta">Woonstel · Sistema de Gestão Técnica de Condomínios</p>
+    <p class="meta" style="margin-top:4px;">Protótipo desenvolvido como Trabalho de Conclusão de Curso na Fatec.</p>
+  </div>
+</div>
+@if (tipo === 'sindico') {
+  <app-bottom-nav-sindico active="perfil" />
+} @else {
+  <app-bottom-nav-morador active="perfil" />
+}

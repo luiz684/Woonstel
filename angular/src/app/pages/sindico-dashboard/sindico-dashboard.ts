@@ -52,7 +52,7 @@ export class SindicoDashboard implements OnInit {
     const ym = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
     this.reservasMes.set(reservas.filter(r => r.status === 'Confirmada' && r.data.startsWith(ym)).length);
 
-    const status = new Map<string, number>([['Pendente', 0], ['Em andamento', 0], ['Resolvida', 0]]);
+    const status = new Map<string, number>([['Pendente', 0], ['Em andamento', 0], ['Resolvida', 0], ['Recusada', 0]]);
     const categorias = new Map<string, number>();
     for (const s of sols) {
       status.set(s.status, (status.get(s.status) ?? 0) + 1);

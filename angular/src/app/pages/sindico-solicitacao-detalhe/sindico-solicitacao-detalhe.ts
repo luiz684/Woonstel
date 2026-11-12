@@ -3,14 +3,15 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SolicitacaoDetalhe, StoreService } from '../../services/store';
 import { ToastService } from '../../services/toast';
-import { BADGE_PRIO, BADGE_STATUS, formatDateBR } from '../../utils/format';
+import { BADGE_PRIO, BADGE_STATUS, MOTIVOS_RECUSA, formatDateBR } from '../../utils/format';
 import { BottomNavSindico } from '../../components/bottom-nav-sindico/bottom-nav-sindico';
+import { CancelarReserva } from '../../components/cancelar-reserva/cancelar-reserva';
 
 type Prio = 'Baixa' | 'Média' | 'Alta';
 
 @Component({
   selector: 'app-sindico-solicitacao-detalhe',
-  imports: [FormsModule, RouterLink, BottomNavSindico],
+  imports: [FormsModule, RouterLink, BottomNavSindico, CancelarReserva],
   templateUrl: './sindico-solicitacao-detalhe.html',
   styleUrl: './sindico-solicitacao-detalhe.css',
 })
@@ -26,9 +27,12 @@ export class SindicoSolicitacaoDetalhe implements OnInit {
   carregado = signal(false);
   salvando = signal(false);
   enviando = signal(false);
+  recusando = signal(false);
   prioridadeNova = signal<Prio | null>(null);
+  recusadasDoMorador = signal(0);
 
   prioridades: Prio[] = ['Baixa', 'Média', 'Alta'];
+  motivosRecusa = MOTIVOS_RECUSA;
   resposta = '';
   badge = BADGE_STATUS;
   prio = BADGE_PRIO;
@@ -40,7 +44,7 @@ export class SindicoSolicitacaoDetalhe implements OnInit {
 
   get podeResponder(): boolean {
     const st = this.s()?.status;
-    return !!st && st !== 'Resolvida';
+    return st === 'Pendente' || st === 'Em andamento';
   }
 
   async ngOnInit() {
@@ -53,6 +57,9 @@ export class SindicoSolicitacaoDetalhe implements OnInit {
     const id = this.route.snapshot.paramMap.get('id') ?? '';
     const sol = await this.store.getSolicitacao(id);
     this.s.set(sol);
+    if (sol) {
+      this.recusadasDoMorador.set(await this.store.contarRecusadasDoMorador(sol.morador_id));
+    }
     if (sol?.foto_path) {
       const url = await this.store.getFotoUrl(sol.foto_path);
       this.fotoUrl.set(url);
@@ -73,6 +80,19 @@ export class SindicoSolicitacaoDetalhe implements OnInit {
     }
     this.prioridadeNova.set(null);
     this.toast.show('Status atualizado! O morador será avisado.');
+    await this.carregar();
+  }
+
+  async recusar(motivo: string) {
+    const sol = this.s();
+    if (!sol) return;
+    this.salvando.set(true);
+    const { error } = await this.store.recusarSolicitacao(sol.id, motivo);
+    this.salvando.set(false);
+    if (error) { this.toast.show(error.message); return; }
+    this.recusando.set(false);
+    this.prioridadeNova.set(null);
+    this.toast.show('Solicitação recusada. O morador será avisado.');
     await this.carregar();
   }
 

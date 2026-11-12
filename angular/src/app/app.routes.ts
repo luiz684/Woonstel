@@ -22,6 +22,7 @@ import { SindicoDashboard } from './pages/sindico-dashboard/sindico-dashboard';
 import { MoradorAvisos } from './pages/morador-avisos/morador-avisos';
 import { MoradorNotificacoes } from './pages/morador-notificacoes/morador-notificacoes';
 import { Convite } from './pages/convite/convite';
+import { Configuracoes } from './pages/configuracoes/configuracoes';
 
 
 
@@ -54,5 +55,8 @@ export const routes: Routes = [
   { path: 'morador/avisos', component: MoradorAvisos },
   { path: 'morador/notificacoes', component: MoradorNotificacoes },
   { path: 'convite/:token', component: Convite },
+  { path: 'morador/configuracoes', component: Configuracoes, data: { tipo: 'condomino' } },
+  { path: 'sindico/configuracoes', component: Configuracoes, data: { tipo: 'sindico' } },
+
   { path: '**', redirectTo: '' },
 ];

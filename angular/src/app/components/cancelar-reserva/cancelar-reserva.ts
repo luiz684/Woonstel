@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 export class CancelarReserva {
   motivos = input.required<string[]>();
   salvando = input(false);
+  titulo = input('Por que você está cancelando?');
+  rotuloConfirmar = input('Confirmar cancelamento');
   confirmar = output<string>();
   voltar = output<void>();
 

@@ -1,0 +1,72 @@
+@if (perfil(); as p) {
+  <div style="text-align:center;margin-bottom:20px;">
+    <div style="display:flex;justify-content:center;margin-bottom:12px;">
+      <app-avatar [nome]="p.nome" [path]="p.foto_path" [tamanho]="96" />
+    </div>
+    <h2 style="font-size:17px;font-weight:700;">{{ p.nome }}</h2>
+    <p class="meta" style="margin-top:2px;">{{ rotuloTipo }}</p>
+
+    @if (confirmandoRemocao()) {
+      <p class="meta" style="margin-top:12px;">Remover sua foto de perfil?</p>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+        <button type="button" class="btn btn-danger-ghost btn-sm" style="width:auto;" (click)="removerFoto()">Sim, remover</button>
+        <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" (click)="confirmandoRemocao.set(false)">Voltar</button>
+      </div>
+    } @else {
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+        <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" [disabled]="enviandoFoto()" (click)="arquivo.click()">
+          {{ p.foto_path ? 'Trocar foto' : 'Adicionar foto' }}
+        </button>
+        @if (p.foto_path) {
+          <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" (click)="confirmandoRemocao.set(true)">Remover foto</button>
+        }
+      </div>
+    }
+    <input #arquivo type="file" accept="image/*" style="display:none;" (change)="onFoto($event)">
+    @if (enviandoFoto()) {
+      <p class="meta" style="margin-top:8px;">Enviando foto...</p>
+    }
+  </div>
+
+  <div class="detail-card">
+    @if (editando()) {
+      <form (ngSubmit)="salvar()">
+        <div class="field">
+          <label for="nome">Nome completo</label>
+          <div class="input-wrap">
+            <input type="text" id="nome" name="nome" [(ngModel)]="nome" maxlength="100" autocomplete="name">
+          </div>
+        </div>
+        <div class="field">
+          <label for="telefone">Telefone</label>
+          <div class="input-wrap">
+            <input type="text" id="telefone" name="telefone" inputmode="tel" maxlength="15" autocomplete="tel"
+                   placeholder="(11) 91234-5678" [value]="telefone" (input)="onTelefone($event)">
+          </div>
+          <p class="meta" style="margin-top:6px;">Opcional. Usado só para contato do condomínio.</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button type="submit" class="btn btn-primary btn-sm" style="width:auto;" [disabled]="salvando()">Salvar</button>
+          <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" (click)="cancelar()">Cancelar</button>
+        </div>
+      </form>
+    } @else {
+      <div class="kv-row"><span class="k">Nome</span><span class="v">{{ p.nome }}</span></div>
+      <div class="kv-row"><span class="k">Email</span><span class="v">{{ p.email }}</span></div>
+      <div class="kv-row"><span class="k">Telefone</span><span class="v">{{ p.telefone || '—' }}</span></div>
+      <div class="kv-row"><span class="k">CPF</span><span class="v">{{ p.cpf }}</span></div>
+      @if (tipo() === 'condomino') {
+        <div class="kv-row"><span class="k">Unidade</span><span class="v">{{ p.apto }}</span></div>
+      }
+      <div class="kv-row"><span class="k">Condomínio</span><span class="v">{{ cond()?.nome ?? '—' }}</span></div>
+      @if (tipo() === 'sindico') {
+        <div class="kv-row"><span class="k">Código de convite</span><span class="v">{{ cond()?.codigo ?? '—' }}</span></div>
+      }
+      <button type="button" class="btn btn-ghost btn-sm" style="width:auto;margin-top:12px;" (click)="editar()">Editar nome e telefone</button>
+      <p class="meta" style="margin-top:8px;">CPF, e-mail, unidade e condomínio só mudam pelo síndico.</p>
+    }
+  </div>
+
+  <a class="btn btn-ghost" [routerLink]="configRota" style="display:flex;">Configurações</a>
+  <button class="btn btn-danger-ghost" type="button" style="margin-top:10px;" (click)="sair()">Sair da conta</button>
+}

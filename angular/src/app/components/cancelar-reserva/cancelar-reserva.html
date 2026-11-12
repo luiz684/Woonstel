@@ -1,5 +1,5 @@
 <div style="margin-top:12px;">
-  <p class="meta" style="margin-bottom:8px;"><strong>Por que você está cancelando?</strong></p>
+  <p class="meta" style="margin-bottom:8px;"><strong>{{ titulo() }}</strong></p>
   <div style="display:flex;flex-direction:column;gap:8px;">
     @for (m of motivos(); track m) {
       <div class="chip" [class.active]="escolhido() === m" (click)="escolher(m)">{{ m }}</div>
@@ -9,7 +9,7 @@
   @if (escolhido() === 'Outro') {
     <div class="field" style="margin-top:10px;">
       <div class="input-wrap">
-        <input type="text" [(ngModel)]="outro" maxlength="120" placeholder="Descreva o motivo">
+        <input type="text" [(ngModel)]="outro" name="outro" maxlength="120" placeholder="Descreva o motivo">
       </div>
     </div>
   }
@@ -19,7 +19,7 @@
   }
 
   <div style="display:flex;gap:8px;margin-top:12px;">
-    <button type="button" class="btn btn-danger-ghost btn-sm" style="width:auto;" [disabled]="salvando()" (click)="enviar()">Confirmar cancelamento</button>
+    <button type="button" class="btn btn-danger-ghost btn-sm" style="width:auto;" [disabled]="salvando()" (click)="enviar()">{{ rotuloConfirmar() }}</button>
     <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" (click)="voltar.emit()">Voltar</button>
   </div>
 </div>

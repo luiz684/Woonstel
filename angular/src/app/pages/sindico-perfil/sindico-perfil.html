@@ -5,22 +5,6 @@
     </a>
     <h1>Perfil</h1>
   </div>
-
-  @if (perfil(); as p) {
-    <div style="text-align:center;margin-bottom:24px;">
-      <div class="avatar" style="width:72px;height:72px;font-size:24px;margin:0 auto 12px;">{{ iniciais(p.nome) }}</div>
-      <h2 style="font-size:17px;font-weight:700;">{{ p.nome }}</h2>
-      <p style="font-size:13px;color:var(--text-muted);margin-top:2px;">Síndico</p>
-    </div>
-
-    <div class="detail-card">
-      <div class="kv-row"><span class="k">Email</span><span class="v">{{ p.email }}</span></div>
-      <div class="kv-row"><span class="k">CPF</span><span class="v">{{ p.cpf }}</span></div>
-      <div class="kv-row"><span class="k">Condomínio</span><span class="v">{{ cond()?.nome ?? '—' }}</span></div>
-      <div class="kv-row"><span class="k">Código de convite</span><span class="v">{{ cond()?.codigo ?? '—' }}</span></div>
-    </div>
-
-    <button class="btn btn-danger-ghost" type="button" (click)="sair()">Sair da conta</button>
-  }
+  <app-perfil-form tipo="sindico" />
 </div>
 <app-bottom-nav-sindico active="perfil" />

@@ -1,7 +1,7 @@
 <div class="screen">
   @if (perfil(); as p) {
     <div class="home-header">
-      <div class="avatar">{{ iniciais(p.nome) }}</div>
+      <app-avatar [nome]="p.nome" [path]="p.foto_path" />
       <div class="greet">
         <h2>Olá, {{ primeiroNome(p.nome) }}!</h2>
         <p>Síndico@if (cond(); as c) { · {{ c.nome }} }</p>

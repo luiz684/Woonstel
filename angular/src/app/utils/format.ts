@@ -96,12 +96,12 @@ export const MOTIVOS_SINDICO = [
   'Outro',
 ];
 
-export const FILTROS_SOLICITACAO = ['Em aberto', 'Pendente', 'Em andamento', 'Resolvida', 'Todas'];
+export const FILTROS_SOLICITACAO = ['Em aberto', 'Pendente', 'Em andamento', 'Resolvida', 'Recusada', 'Todas'];
 export const FILTROS_RESERVA = ['Em aberto', 'Confirmada', 'Em andamento', 'Concluída', 'Cancelada', 'Todas'];
 
 export function solicitacaoNoFiltro(status: string, filtro: string): boolean {
   if (filtro === 'Todas') return true;
-  if (filtro === 'Em aberto') return status !== 'Resolvida';
+  if (filtro === 'Em aberto') return solicitacaoAberta(status);
   return status === filtro;
 }
 
@@ -110,3 +110,23 @@ export function reservaNoFiltro(rotulo: string, filtro: string): boolean {
   if (filtro === 'Em aberto') return rotulo === 'Confirmada' || rotulo === 'Em andamento';
   return rotulo === filtro;
 }
+
+export const CATEGORIAS = ['Elétrica', 'Hidráulica', 'Estrutural', 'Limpeza', 'Outros'];
+export const CATEGORIAS_COM_FOTO_OBRIGATORIA = ['Elétrica', 'Hidráulica', 'Estrutural'];
+
+export function fotoObrigatoria(categoria: string): boolean {
+  return CATEGORIAS_COM_FOTO_OBRIGATORIA.includes(categoria);
+}
+
+export function solicitacaoAberta(status: string): boolean {
+  return status !== 'Resolvida' && status !== 'Recusada';
+}
+
+export const MOTIVOS_RECUSA = [
+  'Não é responsabilidade do condomínio (área privativa)',
+  'Solicitação duplicada',
+  'Não foi possível confirmar o problema',
+  'Foto não corresponde ao relato',
+  'Problema já resolvido ou em andamento',
+  'Outro',
+];
