@@ -1,9 +1,12 @@
 <div class="screen no-nav">
   <div class="auth-header">
-    <div class="Logo">
-      <img src="Woonstel.png" alt="Logo" width="70" height="70">
-    </div>
-    <h1>Esqueceu sua senha?</h1>
+  <a class="back-btn" routerLink="/morador/inicio">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <div class="Logo">
+    <img src="Woonstel.png" alt="Logo" width="70" height="70">
+  </div>
+  <h1>Esqueceu sua senha?</h1>
   </div>
 
   @if (!enviado()) {
@@ -46,5 +49,5 @@
     </div>
   }
 
-  <p class="auth-footer">Ainda não tem conta? <a routerLink="/criar-conta">Criar conta</a></p>
+  <p class="auth-footer">Seu acesso é criado por convite.</p>
 </div>

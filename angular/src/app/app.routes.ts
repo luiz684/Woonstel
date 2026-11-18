@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { Login } from './pages/login/login';
-import { CriarConta } from './pages/criar-conta/criar-conta';
 import { EsqueciSenha } from './pages/esqueci-senha/esqueci-senha';
 import { MoradorInicio } from './pages/morador-inicio/morador-inicio';
 import { MoradorMinhasSolicitacoes } from './pages/morador-minhas-solicitacoes/morador-minhas-solicitacoes';
@@ -8,7 +7,6 @@ import { MoradorSolicitacaoDetalhe } from './pages/morador-solicitacao-detalhe/m
 import { MoradorSolicitarManutencao } from './pages/morador-solicitar-manutencao/morador-solicitar-manutencao';
 import { MoradorReservas } from './pages/morador-reservas/morador-reservas';
 import { MoradorReservarArea } from './pages/morador-reservar-area/morador-reservar-area';
-import { MoradorPerfil } from './pages/morador-perfil/morador-perfil';
 import { SindicoInicio } from './pages/sindico-inicio/sindico-inicio';
 import { SindicoCadastrarCondominio } from './pages/sindico-cadastrar-condominio/sindico-cadastrar-condominio';
 import { SindicoSolicitacoes } from './pages/sindico-solicitacoes/sindico-solicitacoes';
@@ -16,19 +14,18 @@ import { SindicoSolicitacaoDetalhe } from './pages/sindico-solicitacao-detalhe/s
 import { SindicoMoradores } from './pages/sindico-moradores/sindico-moradores';
 import { SindicoReservas } from './pages/sindico-reservas/sindico-reservas';
 import { SindicoAvisos } from './pages/sindico-avisos/sindico-avisos';
-import { SindicoPerfil } from './pages/sindico-perfil/sindico-perfil';
 import { SindicoAreas } from './pages/sindico-areas/sindico-areas';
 import { SindicoDashboard } from './pages/sindico-dashboard/sindico-dashboard';
 import { MoradorAvisos } from './pages/morador-avisos/morador-avisos';
 import { MoradorNotificacoes } from './pages/morador-notificacoes/morador-notificacoes';
 import { Convite } from './pages/convite/convite';
-import { Configuracoes } from './pages/configuracoes/configuracoes';
+import { Perfil } from './pages/perfil/perfil';
+
 
 
 
 export const routes: Routes = [
   { path: '', component: Login },
-  { path: 'criar-conta', component: CriarConta },
   { path: 'esqueci-senha', component: EsqueciSenha },
   { path: 'morador/inicio', component: MoradorInicio },
   { path: 'morador/minhas-solicitacoes', component: MoradorMinhasSolicitacoes },
@@ -36,7 +33,6 @@ export const routes: Routes = [
   { path: 'morador/solicitar-manutencao', component: MoradorSolicitarManutencao },
   { path: 'morador/reservas', component: MoradorReservas },
   { path: 'morador/reservar-area', component: MoradorReservarArea },
-  { path: 'morador/perfil', component: MoradorPerfil },
   { path: 'sindico/inicio', component: SindicoInicio },
   { path: 'sindico/cadastrar-condominio', component: SindicoCadastrarCondominio },
   { path: 'sindico/solicitacoes', component: SindicoSolicitacoes },
@@ -44,19 +40,18 @@ export const routes: Routes = [
   { path: 'sindico/moradores', component: SindicoMoradores },
   { path: 'sindico/reservas', component: SindicoReservas },
   { path: 'sindico/avisos', component: SindicoAvisos },
-  { path: 'sindico/perfil', component: SindicoPerfil },
   { path: 'sindico/solicitacoes', component: SindicoSolicitacoes },
   { path: 'sindico/solicitacao/:id', component: SindicoSolicitacaoDetalhe },
   { path: 'sindico/moradores', component: SindicoMoradores },
   { path: 'sindico/avisos', component: SindicoAvisos },
-  { path: 'sindico/perfil', component: SindicoPerfil },
   { path: 'sindico/areas', component: SindicoAreas },
   { path: 'sindico/dashboard', component: SindicoDashboard },
   { path: 'morador/avisos', component: MoradorAvisos },
   { path: 'morador/notificacoes', component: MoradorNotificacoes },
   { path: 'convite/:token', component: Convite },
-  { path: 'morador/configuracoes', component: Configuracoes, data: { tipo: 'condomino' } },
-  { path: 'sindico/configuracoes', component: Configuracoes, data: { tipo: 'sindico' } },
-
+  { path: 'morador/perfil', component: Perfil, data: { tipo: 'condomino' } },
+  { path: 'morador/perfil/:secao', component: Perfil, data: { tipo: 'condomino' } },
+  { path: 'sindico/perfil', component: Perfil, data: { tipo: 'sindico' } },
+  { path: 'sindico/perfil/:secao', component: Perfil, data: { tipo: 'sindico' } },
   { path: '**', redirectTo: '' },
 ];

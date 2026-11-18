@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_KEY, LOGIN_FUNCTION } from '../supabase.config';
 import { dataHoraLabel } from '../utils/format';
+ 
 
 export type Tipo = 'condomino' | 'sindico' | 'funcionario';
 
@@ -105,6 +106,7 @@ export interface SolicitacaoDetalhe {
   created_at: string;
   motivo_recusa: string | null;
   foto_origem: 'camera' | 'galeria' | null;
+  anexos: Anexo[] | null;
 }
 
 export type Solicitacao = Pick<
@@ -155,6 +157,13 @@ export interface ConviteInfo {
 export interface Preferencias {
   notificacoes?: Partial<Record<'status' | 'comentario' | 'reserva_cancelada' | 'aviso', boolean>>;
 }
+
+export interface Anexo {
+  path: string;
+  tipo: 'foto' | 'video';
+  origem: 'camera' | 'galeria';
+}
+export type AnexoUrl = Anexo & { url: string | null };
 
 
 @Injectable({ providedIn: 'root' })
@@ -313,10 +322,11 @@ export class StoreService {
     return (data as SolicitacaoDetalhe) ?? null;
   }
 
-   async criarSolicitacao(p: Profile, d: {
+     async criarSolicitacao(p: Profile, d: {
     titulo: string; categoria: string; descricao: string; localizacao: string;
-    prioridade: string; fotoPath: string | null; fotoOrigem: 'camera' | 'galeria' | null; dataLabel: string;
+    prioridade: string; anexos: Anexo[]; dataLabel: string;
   }) {
+    const primeira = d.anexos.find(a => a.tipo === 'foto');
     return this.supabase.from('solicitacoes').insert({
       condominio_id: p.condominio_id,
       morador_id: p.id,
@@ -327,13 +337,15 @@ export class StoreService {
       descricao: d.descricao,
       localizacao: d.localizacao,
       prioridade: d.prioridade,
-      foto: !!d.fotoPath,
-      foto_path: d.fotoPath,
-      foto_origem: d.fotoPath ? d.fotoOrigem : null,
+      foto: d.anexos.length > 0,
+      foto_path: primeira?.path ?? null,
+      foto_origem: primeira?.origem ?? null,
+      anexos: d.anexos,
       status: 'Pendente',
       historico: [{ status: 'Solicitação registrada', data: d.dataLabel, done: true }],
     });
-  } 
+  }
+
 
   async atualizarStatusSolicitacao(s: SolicitacaoDetalhe, novo: 'Em andamento' | 'Resolvida') {
     const texto = novo === 'Em andamento' ? 'Solicitação validada pela adm' : 'Serviço concluído';
@@ -716,4 +728,19 @@ export class StoreService {
       notificacoes: notifs.data ?? [],
     };
   }
+
+   
+  anexosDe(s: SolicitacaoDetalhe): Anexo[] {
+    if (s.anexos && s.anexos.length > 0) return s.anexos;
+    return s.foto_path ? [{ path: s.foto_path, tipo: 'foto', origem: s.foto_origem ?? 'galeria' }] : [];
+  }
+
+  async getAnexosComUrl(s: SolicitacaoDetalhe): Promise<AnexoUrl[]> {
+    return Promise.all(this.anexosDe(s).map(async a => ({ ...a, url: await this.getFotoUrl(a.path) })));
+  }
+
+  async removerArquivosSolicitacao(paths: string[]) {
+    if (paths.length > 0) await this.supabase.storage.from('solicitacoes').remove(paths);
+  }
+
 }

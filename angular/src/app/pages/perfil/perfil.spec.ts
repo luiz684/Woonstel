@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SindicoPerfil } from './sindico-perfil';
+import { Perfil } from './perfil';
 
-describe('SindicoPerfil', () => {
-  let component: SindicoPerfil;
-  let fixture: ComponentFixture<SindicoPerfil>;
+describe('Perfil', () => {
+  let component: Perfil;
+  let fixture: ComponentFixture<Perfil>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SindicoPerfil],
+      imports: [Perfil],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SindicoPerfil);
+    fixture = TestBed.createComponent(Perfil);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

@@ -1,0 +1,294 @@
+@if (perfil(); as p) {
+
+  <div class="screen perfil-wp">
+
+    @if (secao() === null) {
+      <div class="topbar">
+        <a class="back-btn" [routerLink]="inicioRota" aria-label="Voltar">
+          <app-icone nome="seta-esq" [tamanho]="17" />
+        </a>
+        <h1>Perfil</h1>
+      </div>
+
+      <div style="text-align:center;margin:4px 0 22px;">
+        <a class="avatar-edit" [routerLink]="[perfilRota, 'editar']" aria-label="Editar perfil">
+          <app-avatar [nome]="p.nome" [path]="p.foto_path" [tamanho]="104" />
+          <span class="avatar-badge"><app-icone nome="lapis" [tamanho]="15" /></span>
+        </a>
+        <h2 style="font-size:18px;font-weight:700;margin-top:12px;">{{ p.nome }}</h2>
+        <p class="meta" style="margin-top:2px;">{{ rotuloTipo }}</p>
+      </div>
+
+      <nav aria-label="Configurações">
+
+        <div class="section-title" style="margin:0 0 10px;">Preferências</div>
+        <div class="detail-card wp-card">
+          @for (s of secoes; track s.id) {
+            @if (['notificacoes', 'aparencia', 'acessibilidade'].includes(s.id)) {
+              <a class="lista-item" [routerLink]="[perfilRota, s.id]">
+                <span class="cfg-icone"><app-icone [nome]="s.icone" [tamanho]="20" /></span>
+                <span>
+                  <span class="cfg-titulo">{{ s.titulo }}</span>
+                  <span class="cfg-sub">{{ s.sub }}</span>
+                </span>
+              </a>
+            }
+          }
+        </div>
+
+        <div class="section-title" style="margin:22px 0 10px;">Conta e dados</div>
+        <div class="detail-card wp-card">
+          @for (s of secoes; track s.id) {
+            @if (['conta', 'privacidade'].includes(s.id)) {
+              <a class="lista-item" [routerLink]="[perfilRota, s.id]">
+                <span class="cfg-icone"><app-icone [nome]="s.icone" [tamanho]="20" /></span>
+                <span>
+                  <span class="cfg-titulo">{{ s.titulo }}</span>
+                  <span class="cfg-sub">{{ s.sub }}</span>
+                </span>
+              </a>
+            }
+          }
+        </div>
+
+        <div class="section-title" style="margin:22px 0 10px;">Aplicativo</div>
+        <div class="detail-card wp-card">
+          @for (s of secoes; track s.id) {
+            @if (s.id === 'sobre') {
+              <a class="lista-item" [routerLink]="[perfilRota, s.id]">
+                <span class="cfg-icone"><app-icone [nome]="s.icone" [tamanho]="20" /></span>
+                <span>
+                  <span class="cfg-titulo">{{ s.titulo }}</span>
+                  <span class="cfg-sub">{{ s.sub }}</span>
+                </span>
+              </a>
+            }
+          }
+          <button type="button" class="lista-item sair" (click)="confirmandoSaida.set(true)">
+            <span class="cfg-icone"><app-icone nome="sair" [tamanho]="20" /></span>
+            <span class="cfg-titulo">Desconectar da conta</span>
+          </button>
+        </div>
+
+      </nav>
+
+    } @else {
+      <div class="topbar">
+        <a class="back-btn" [routerLink]="perfilRota" aria-label="Voltar">
+          <app-icone nome="seta-esq" [tamanho]="17" />
+        </a>
+        <h1>{{ tituloTela }}</h1>
+      </div>
+
+      @switch (secao()) {
+
+        @case ('editar') {
+          <div style="text-align:center;margin-bottom:22px;">
+            <button type="button" class="avatar-edit" (click)="sheet.set(true)" aria-label="Alterar foto de perfil">
+              <app-avatar [nome]="p.nome" [path]="p.foto_path" [tamanho]="112" />
+              <span class="avatar-badge"><app-icone nome="camera" [tamanho]="16" /></span>
+            </button>
+            @if (enviandoFoto()) {
+              <p class="meta" style="margin-top:8px;">Enviando foto...</p>
+            }
+          </div>
+
+          <form (ngSubmit)="salvar()">
+            <div class="field">
+              <label for="nome">Nome completo</label>
+              <div class="input-wrap" data-icone="usuario">
+                <input type="text" id="nome" name="nome" [(ngModel)]="nome" maxlength="100" autocomplete="name">
+              </div>
+            </div>
+            <div class="field">
+              <label for="telefone">Telefone</label>
+              <div class="input-wrap" data-icone="telefone">
+                <input type="text" id="telefone" name="telefone" inputmode="tel" maxlength="15" autocomplete="tel"
+                       placeholder="(11) 91234-5678" [value]="telefone" (input)="onTelefone($event)">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" [disabled]="salvando()" data-ic="check">Salvar alterações</button>
+          </form>
+
+          <div class="section-title" style="margin:24px 0 10px;">Informações da conta</div>
+          <div class="detail-card">
+            <div class="kv-row"><span class="k">Email</span><span class="v">{{ p.email }}</span></div>
+            <div class="kv-row"><span class="k">CPF</span><span class="v">{{ p.cpf }}</span></div>
+            @if (tipo === 'condomino') {
+              <div class="kv-row"><span class="k">Unidade</span><span class="v">{{ p.apto }}</span></div>
+            }
+            <div class="kv-row"><span class="k">Condomínio</span><span class="v">{{ cond()?.nome ?? '—' }}</span></div>
+            @if (tipo === 'sindico') {
+              <div class="kv-row"><span class="k">Código de convite</span><span class="v">{{ cond()?.codigo ?? '—' }}</span></div>
+            }
+          </div>
+        }
+
+        @case ('notificacoes') {
+          <div class="section-title" style="margin:0 0 10px;">Avisar quando houver</div>
+          <div class="detail-card wp-card">
+            @for (n of notificacoes; track n.chave) {
+              <label class="wp-opcao">
+                <span class="wp-opcao-texto">
+                  <span class="wp-opcao-titulo">{{ n.rotulo }}</span>
+                </span>
+                <input type="checkbox" class="wp-switch" role="switch"
+                       [checked]="notifAtiva(n.chave)" (change)="alternarNotif(n.chave, $event)">
+              </label>
+            }
+          </div>
+        }
+
+        @case ('aparencia') {
+          <div class="section-title" style="margin:0 0 10px;">Tema do aplicativo</div>
+          <div class="detail-card wp-card" role="radiogroup" aria-label="Tema do aplicativo">
+            @for (t of temas; track t.valor) {
+              <button type="button" class="wp-opcao" role="radio"
+                      [attr.aria-checked]="a().tema === t.valor" (click)="mudarTema(t.valor)">
+                <span class="cfg-icone"><app-icone [nome]="t.icone" [tamanho]="20" /></span>
+                <span class="wp-opcao-texto">
+                  <span class="wp-opcao-titulo">{{ t.rotulo }}</span>
+                </span>
+                <span class="wp-radio" [class.ativo]="a().tema === t.valor"></span>
+              </button>
+            }
+          </div>
+        }
+
+        @case ('acessibilidade') {
+          <div class="section-title" style="margin:0 0 10px;">Tamanho da letra</div>
+          <div class="detail-card" style="padding:14px;">
+            <div class="chip-row wrap">
+              @for (f of fontes; track f.valor) {
+                <div class="chip" [class.active]="a().fonte === f.valor" (click)="mudarFonte(f.valor)">{{ f.rotulo }}</div>
+              }
+            </div>
+          </div>
+
+          <div class="section-title" style="margin:22px 0 10px;">Recursos</div>
+          <div class="detail-card wp-card">
+            <label class="wp-opcao">
+              <span class="wp-opcao-texto">
+                <span class="wp-opcao-titulo">Alto contraste</span>
+                <span class="wp-opcao-desc">Reforça as cores para facilitar a leitura.</span>
+              </span>
+              <input type="checkbox" class="wp-switch" role="switch" [checked]="a().contraste" (change)="mudarContraste($event)">
+            </label>
+
+            <label class="wp-opcao">
+              <span class="wp-opcao-texto">
+                <span class="wp-opcao-titulo">Reduzir animações</span>
+                <span class="wp-opcao-desc">Diminui os movimentos e as transições da tela.</span>
+              </span>
+              <input type="checkbox" class="wp-switch" role="switch" [checked]="a().semMovimento" (change)="mudarMovimento($event)">
+            </label>
+
+            <label class="wp-opcao">
+              <span class="wp-opcao-texto">
+                <span class="wp-opcao-titulo">Tradutor de Libras (VLibras)</span>
+                <span class="wp-opcao-desc">Precisa de internet. Ao desligar, a página recarrega.</span>
+              </span>
+              <input type="checkbox" class="wp-switch" role="switch" [checked]="a().vlibras" (change)="mudarVlibras($event)">
+            </label>
+          </div>
+        }
+
+        @case ('conta') {
+          <form (ngSubmit)="alterarSenha()">
+            <div class="field">
+              <label for="atual">Senha atual</label>
+              <div class="input-wrap" data-icone="cadeado">
+                <input [type]="mostrarSenhas() ? 'text' : 'password'" id="atual" name="atual" [(ngModel)]="atual" autocomplete="current-password">
+              </div>
+            </div>
+            <div class="field">
+              <label for="nova">Nova senha</label>
+              <div class="input-wrap" data-icone="cadeado">
+                <input [type]="mostrarSenhas() ? 'text' : 'password'" id="nova" name="nova" [(ngModel)]="nova" autocomplete="new-password">
+              </div>
+            </div>
+            <app-regras-senha [senha]="nova" />
+            <div class="field" [class.error]="erroConfirmar()">
+              <label for="confirmar">Confirmar nova senha</label>
+              <div class="input-wrap" data-icone="cadeado">
+                <input [type]="mostrarSenhas() ? 'text' : 'password'" id="confirmar" name="confirmar" [(ngModel)]="confirmar" autocomplete="new-password">
+              </div>
+              <div class="field-error-msg">As senhas não coincidem.</div>
+            </div>
+            <label class="check-row">
+              <input type="checkbox" [checked]="mostrarSenhas()" (change)="mostrarSenhas.set(!mostrarSenhas())">
+              Mostrar senhas
+            </label>
+            <button type="submit" class="btn btn-primary" [disabled]="salvandoSenha()" data-ic="check">Salvar nova senha</button>
+          </form>
+        }
+
+        @case ('privacidade') {
+          <p class="meta" style="margin-bottom:12px;">Cópia dos seus dados: perfil, solicitações, reservas e notificações.</p>
+          <button class="btn btn-ghost" type="button" (click)="exportar()" data-ic="download">Baixar meus dados</button>
+          <p class="meta" style="margin-top:16px;">
+            {{ tipo === 'condomino' ? 'Para excluir seu acesso, peça ao síndico.' : 'A exclusão da conta de síndico ainda não está disponível.' }}
+          </p>
+        }
+
+        @case ('sobre') {
+          <div class="detail-card" style="padding:14px;">
+            <p style="font-size:14px;font-weight:600;">Woonstel</p>
+            <p class="meta" style="margin-top:4px;">Sistema de Gestão Técnica de Condomínios. Protótipo desenvolvido como Trabalho de Conclusão de Curso na Fatec.</p>
+          </div>
+        }
+      }
+    }
+  </div>
+
+  @if (sheet()) {
+    <div class="sheet-fundo" (click)="fecharSheet()"></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Foto de perfil">
+      <div class="sheet-barra"></div>
+      <p style="font-size:15px;font-weight:700;margin-bottom:6px;">Foto de perfil</p>
+
+      @if (confirmandoRemocao()) {
+        <p class="meta" style="margin:10px 0;">Remover sua foto de perfil?</p>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn btn-danger-ghost btn-sm" style="width:auto;" (click)="removerFoto()">Sim, remover</button>
+          <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" (click)="confirmandoRemocao.set(false)">Voltar</button>
+        </div>
+      } @else {
+        <button type="button" class="sheet-item" (click)="cam.click(); sheet.set(false)">
+          <span class="sheet-ico"><app-icone nome="camera" [tamanho]="20" /></span> Tirar foto
+        </button>
+        <button type="button" class="sheet-item" (click)="gal.click(); sheet.set(false)">
+          <span class="sheet-ico"><app-icone nome="imagem" [tamanho]="20" /></span> Escolher da galeria
+        </button>
+        @if (p.foto_path) {
+          <button type="button" class="sheet-item perigo" (click)="confirmandoRemocao.set(true)">
+            <span class="sheet-ico"><app-icone nome="lixeira" [tamanho]="20" /></span> Remover foto
+          </button>
+        }
+        <button type="button" class="sheet-item" (click)="fecharSheet()">Cancelar</button>
+      }
+    </div>
+  }
+
+  @if (confirmandoSaida()) {
+    <div class="sheet-fundo" (click)="confirmandoSaida.set(false)"></div>
+    <div class="sheet" role="alertdialog" aria-modal="true" aria-label="Desconectar da conta">
+      <div class="sheet-barra"></div>
+      <p style="font-size:16px;font-weight:700;margin-bottom:4px;">Desconectar da conta?</p>
+      <p class="meta" style="margin-bottom:18px;">Para voltar, você entra de novo com seu CPF e sua senha.</p>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="btn btn-ghost" style="flex:1;" (click)="confirmandoSaida.set(false)">Cancelar</button>
+        <button type="button" class="btn btn-perigo" style="flex:1;" (click)="sair()">Sair</button>
+      </div>
+    </div>
+  }
+
+  <input #cam type="file" accept="image/*" capture="user" style="display:none;" (change)="onFoto($event)">
+  <input #gal type="file" accept="image/*" style="display:none;" (change)="onFoto($event)">
+
+  @if (tipo === 'sindico') {
+    <app-bottom-nav-sindico active="perfil" />
+  } @else {
+    <app-bottom-nav-morador active="perfil" />
+  }
+}

@@ -1,7 +1,7 @@
 <div class="screen">
   <div class="topbar">
-    <a class="back-btn" routerLink="/morador/inicio">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    <a class="back-btn" routerLink="/morador/inicio" aria-label="Voltar">
+      <app-icone nome="seta-esq" [tamanho]="17" />
     </a>
     <h1>Solicitar Manutenção</h1>
   </div>
@@ -9,14 +9,14 @@
   <form (ngSubmit)="registrar()">
     <div class="field">
       <label for="titulo">Título da Solicitação</label>
-      <div class="input-wrap">
+      <div class="input-wrap" data-icone="texto">
         <input type="text" id="titulo" name="titulo" [(ngModel)]="titulo" placeholder="Ex: Infiltração na parede da garagem">
       </div>
     </div>
 
     <div class="field">
       <label for="categoria">Categoria</label>
-      <div class="input-wrap">
+      <div class="input-wrap" data-icone="tag">
         <select id="categoria" name="categoria" [(ngModel)]="categoria">
           @for (c of categorias; track c) {
             <option [value]="c">{{ c }}</option>
@@ -33,7 +33,7 @@
 
     <div class="field">
       <label for="local">Localização / Bloco</label>
-      <div class="input-wrap">
+      <div class="input-wrap" data-icone="pin">
         <input type="text" id="local" name="local" [(ngModel)]="local" placeholder="Ex: Garagem G2, vaga 44">
       </div>
     </div>
@@ -42,36 +42,61 @@
       <label>Prioridade</label>
       <div class="chip-row">
         @for (p of prioridades; track p) {
-          <div class="chip" [class.active]="prioridade() === p" (click)="prioridade.set(p)">{{ p }}</div>
+          <div class="chip" [class.active]="prioridade() === p" (click)="prioridade.set(p)">
+            <span class="dot-prio" [style.background]="cores[p]"></span> {{ p }}
+          </div>
         }
       </div>
     </div>
 
     <div class="field">
-      <label>Foto do problema {{ obrigatoria ? '(obrigatória)' : '(opcional)' }}</label>
-
-      @if (previewUrl(); as url) {
-        <img [src]="url" alt="Foto selecionada" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;display:block;margin-bottom:10px;">
-        <button type="button" class="btn btn-ghost btn-sm" style="width:auto;margin-bottom:10px;" (click)="removerFoto()">Remover foto</button>
-      }
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" [disabled]="processandoFoto()" (click)="camera.click()">Tirar foto</button>
-        <button type="button" class="btn btn-ghost btn-sm" style="width:auto;" [disabled]="processandoFoto()" (click)="galeria.click()">Escolher da galeria</button>
+      <label>Fotos e vídeo {{ obrigatoria ? '(obrigatório)' : '(opcional)' }} · {{ itens().length }}/{{ max }}</label>
+      <div class="anexos">
+        @for (it of itens(); track it.id) {
+          <div class="anexo">
+            @if (it.tipo === 'video') {
+              <video [src]="it.url" muted preload="metadata" playsinline></video>
+              <span class="anexo-play"><app-icone nome="play" [tamanho]="22" /></span>
+            } @else {
+              <img [src]="it.url" alt="Foto anexada">
+            }
+            <button type="button" class="anexo-x" (click)="remover(it)" aria-label="Remover arquivo">
+              <app-icone nome="fechar" [tamanho]="14" />
+            </button>
+          </div>
+        }
+        @if (itens().length < max) {
+          <button type="button" class="anexo-add" [disabled]="processando()" (click)="sheet.set(true)" aria-label="Adicionar foto ou vídeo">
+            <app-icone nome="camera" [tamanho]="24" />
+            <span>{{ processando() ? 'Aguarde' : 'Adicionar' }}</span>
+          </button>
+        }
       </div>
-      <input #camera type="file" accept="image/*" capture="environment" style="display:none;" (change)="onFoto($event, 'camera')">
-      <input #galeria type="file" accept="image/*" style="display:none;" (change)="onFoto($event, 'galeria')">
-
-      @if (processandoFoto()) {
-        <p class="meta" style="margin-top:6px;">Preparando a foto...</p>
-      } @else if (obrigatoria) {
-        <p class="meta" style="margin-top:6px;">Elétrica, hidráulica e estrutural exigem uma foto. Prefira tirá-la no local do problema.</p>
-      } @else {
-        <p class="meta" style="margin-top:6px;">Ajuda o síndico a entender o problema.</p>
-      }
     </div>
 
-    <button type="submit" class="btn btn-primary" [disabled]="salvando() || processandoFoto()">Registrar solicitação</button>
+    <button type="submit" class="btn btn-primary" [disabled]="salvando() || processando()" data-ic="check">Registrar solicitação</button>
   </form>
 </div>
+
+@if (sheet()) {
+  <div class="sheet-fundo" (click)="sheet.set(false)"></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Adicionar foto ou vídeo">
+    <div class="sheet-barra"></div>
+    <button type="button" class="sheet-item" (click)="fotoCam.click(); sheet.set(false)">
+      <span class="sheet-ico"><app-icone nome="camera" [tamanho]="20" /></span> Tirar foto
+    </button>
+    <button type="button" class="sheet-item" (click)="videoCam.click(); sheet.set(false)">
+      <span class="sheet-ico"><app-icone nome="video" [tamanho]="20" /></span> Gravar vídeo
+    </button>
+    <button type="button" class="sheet-item" (click)="galeria.click(); sheet.set(false)">
+      <span class="sheet-ico"><app-icone nome="imagem" [tamanho]="20" /></span> Escolher da galeria
+    </button>
+    <button type="button" class="sheet-item" (click)="sheet.set(false)">Cancelar</button>
+  </div>
+}
+
+<input #fotoCam type="file" accept="image/*" capture="environment" style="display:none;" (change)="onArquivos($event, 'camera')">
+<input #videoCam type="file" accept="video/*" capture="environment" style="display:none;" (change)="onArquivos($event, 'camera')">
+<input #galeria type="file" accept="image/*,video/*" multiple style="display:none;" (change)="onArquivos($event, 'galeria')">
+
 <app-bottom-nav-morador active="ocorrencias" />

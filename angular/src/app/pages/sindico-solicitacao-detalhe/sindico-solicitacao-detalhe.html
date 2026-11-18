@@ -34,20 +34,19 @@
         <p class="desc-text">{{ sol.descricao }}</p>
       </div>
 
-      @if (sol.foto_path) {
+            @if (anexos().length > 0) {
         <div class="detail-card">
-          <div class="section-title" style="margin-bottom:10px;">Foto Anexada</div>
-          @if (fotoUrl(); as url) {
-            <img [src]="url" alt="Foto da solicitação" style="width:100%;border-radius:12px;display:block;">
-          } @else if (fotoErro()) {
-            <p class="meta">Não foi possível carregar a foto.</p>
-          } @else {
-            <p class="meta">Carregando foto...</p>
-          }
-          @if (sol.foto_origem === 'camera') {
-            <p class="meta" style="margin-top:8px;">Origem: tirada na câmera do aparelho, pelo app.</p>
-          } @else if (sol.foto_origem === 'galeria') {
-            <p class="meta" style="margin-top:8px;">Origem: escolhida da galeria do aparelho.</p>
+          <div class="section-title" style="margin-bottom:10px;">Fotos e vídeos</div>
+          @for (a of anexos(); track a.path) {
+            @if (a.url) {
+              @if (a.tipo === 'video') {
+                <video class="anexo-midia" [src]="a.url" controls preload="metadata" playsinline></video>
+              } @else {
+                <img class="anexo-midia" [src]="a.url" alt="Foto da solicitação">
+              }
+            } @else {
+              <p class="meta">Não foi possível carregar este arquivo.</p>
+            }
           }
         </div>
       }

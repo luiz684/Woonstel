@@ -8,9 +8,14 @@
 
   @if (carregado()) {
     @if (info(); as i) {
-      <div class="role-note">
-        Olá, <strong>{{ i.nome }}</strong>! O síndico de <strong>{{ i.condominio }}</strong> criou seu acesso
-        (unidade {{ i.apto }}). Crie uma senha só sua: ninguém mais a conhece.
+            <div class="role-note">
+        @if (i.tipo === 'sindico') {
+          Olá, <strong>{{ i.nome }}</strong>! A equipe do Woonstel liberou seu acesso como <strong>síndico</strong>.
+          Crie uma senha só sua. Depois você cadastra o seu condomínio.
+        } @else {
+          Olá, <strong>{{ i.nome }}</strong>! O síndico de <strong>{{ i.condominio }}</strong> criou seu acesso
+          (unidade {{ i.apto }}). Crie uma senha só sua: ninguém mais a conhece.
+        }
       </div>
 
       <form (ngSubmit)="criarSenha()">

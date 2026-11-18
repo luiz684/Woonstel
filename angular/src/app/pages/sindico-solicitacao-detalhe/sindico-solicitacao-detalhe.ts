@@ -6,6 +6,7 @@ import { ToastService } from '../../services/toast';
 import { BADGE_PRIO, BADGE_STATUS, MOTIVOS_RECUSA, formatDateBR } from '../../utils/format';
 import { BottomNavSindico } from '../../components/bottom-nav-sindico/bottom-nav-sindico';
 import { CancelarReserva } from '../../components/cancelar-reserva/cancelar-reserva';
+import { AnexoUrl } from '../../services/store';
 
 type Prio = 'Baixa' | 'Média' | 'Alta';
 
@@ -22,8 +23,7 @@ export class SindicoSolicitacaoDetalhe implements OnInit {
   private toast = inject(ToastService);
 
   s = signal<SolicitacaoDetalhe | null>(null);
-  fotoUrl = signal<string | null>(null);
-  fotoErro = signal(false);
+  anexos = signal<AnexoUrl[]>([]);
   carregado = signal(false);
   salvando = signal(false);
   enviando = signal(false);
@@ -60,12 +60,7 @@ export class SindicoSolicitacaoDetalhe implements OnInit {
     if (sol) {
       this.recusadasDoMorador.set(await this.store.contarRecusadasDoMorador(sol.morador_id));
     }
-    if (sol?.foto_path) {
-      const url = await this.store.getFotoUrl(sol.foto_path);
-      this.fotoUrl.set(url);
-      this.fotoErro.set(!url);
-    }
-    this.carregado.set(true);
+        if (sol) this.anexos.set(await this.store.getAnexosComUrl(sol));
   }
 
   async mudarStatus(novo: 'Em andamento' | 'Resolvida') {
