@@ -221,7 +221,7 @@ A pasta [`docs/`](docs) reúne a documentação do Projeto Integrador (requisito
 
 ## Equipe
 
+- Lucas dos Santos Andrade
 - Luiz Gustavo Dantas de Jesus
-- _(adicione aqui os demais integrantes)_
 
 Fatec Ipiranga — Análise e Desenvolvimento de Sistemas.
