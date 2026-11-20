@@ -4,6 +4,10 @@ Aplicação web para **centralizar o registro, o acompanhamento e o histórico d
 
 > Projeto desenvolvido como Trabalho de Conclusão de Curso (Projeto Integrador) na Fatec Ipiranga.
 
+> ⚠️ **Use a branch `angular-migration`, e não a `main`.**
+> A versão atual do sistema (Angular + Supabase) está na `angular-migration`. A `main` guarda apenas o **protótipo inicial** em HTML, CSS e JavaScript, com dados simulados no navegador.
+> Para baixar a branch correta: `git clone -b angular-migration https://github.com/luiz684/Woonstel.git`
+
 ## Sumário
 
 - [Funcionalidades](#funcionalidades)
@@ -11,6 +15,7 @@ Aplicação web para **centralizar o registro, o acompanhamento e o histórico d
 - [Arquitetura](#arquitetura)
 - [Estrutura do repositório](#estrutura-do-repositório)
 - [Como executar](#como-executar)
+- [Cadastro de moradores (fluxo de convite)](#cadastro-de-moradores-fluxo-de-convite)
 - [Banco de dados](#banco-de-dados)
 - [Segurança](#segurança)
 - [Acessibilidade](#acessibilidade)
@@ -216,7 +221,7 @@ A pasta [`docs/`](docs) reúne a documentação do Projeto Integrador (requisito
 
 ## Equipe
 
-- Lucas dos Santos Andrade
 - Luiz Gustavo Dantas de Jesus
+- _(adicione aqui os demais integrantes)_
 
 Fatec Ipiranga — Análise e Desenvolvimento de Sistemas.
